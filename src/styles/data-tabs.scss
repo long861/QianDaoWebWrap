@@ -1,0 +1,104 @@
+@keyframes myfirst
+{
+  0%   {box-shadow: 0px 0px 10px orange}
+  25%  {box-shadow: 0px 0px 15px yellow}
+  50%  {box-shadow: 0px 0px 10px greenyellow}
+  75%  {box-shadow: 0px 0px 15px palegoldenrod}
+  100% {box-shadow: 0px 0px 10px orange};
+}
+.data-tabs{
+    .item-wrap{
+      display: flex;
+      justify-content: center;
+      cursor: pointer;
+      .add-match{
+        border:solid 1px #999;
+        .img-add-match{
+          width: 80px;
+          height: 80px;
+          margin: 0 auto;
+        }
+      }
+      .add-match:hover{
+        background-color: #eee;
+      }
+    }
+    .item {
+        position: relative;
+        margin: 20px;
+        padding: 12px 20px;
+        height: 180px;
+        border-radius: 4px;
+        box-sizing: border-box;
+        overflow: hidden;
+        color: #fff;
+        min-width: 200px;
+        flex-grow: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: left;
+      }
+      .item:hover{
+        animation:myfirst infinite 2s;
+      }
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        .item-header-match-name{
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        & > p {
+          margin-right: 10px;
+          font-size: 14px;
+        }
+        & > span {
+          // position: absolute;
+          // right: 0px;
+          // top: 0px;
+          text-align: center;
+          min-width: 60px;
+          padding: 5px 3px;
+          border-radius: 4px;
+          font-size: 14px;
+          background: rgba(255, 255, 255, 0.3);
+        }
+      }
+      .item-body {
+        & > h2 {
+          margin: 0;
+          font-size: 32px;
+          line-height: 60px;
+        }
+      }
+      .item-footer {
+        line-height: 16px;
+        & > span {
+          font-size: 10px;
+        }
+        & > p {
+          margin: 0px;
+          font-size: 12px;
+        }
+      }
+      .item-tip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        bottom: 10px;
+        right: 10px;
+        border: 2px solid #fff;
+        border-radius: 100%;
+        font-size: 48px;
+        transform: rotate(-40deg);
+        opacity: 0.1;
+      }
+
+}

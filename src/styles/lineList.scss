@@ -1,0 +1,88 @@
+.line{
+    .list {
+        .wrap{
+            flex-direction:row;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #FFF;
+            border:1px solid #eee;
+            padding: 10px 50px 10px 0px;
+            overflow: hidden;
+            .left{
+                .index{
+                    justify-content: flex-start;
+                    padding: 0px 50px 0px 20px;
+                }
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .left-img::before{
+                    content: ""; 
+                    display: block; 
+                    padding-top: 100%;
+                }
+                .left-img{
+                    background-image: url(https://scdn.xidong360.com/201712/3296b3b….png);
+                    height: 60px;
+                    width: 60px;
+                    background-position: center;
+                    background-size: cover;
+                    border-radius: 5px;
+                    // background-size: 100% auto;
+                    background-repeat: no-repeat;
+                }
+                .left-desc{
+                    margin-left: 10px;
+                    min-width: 200px;
+                    // max-width: 500px;
+                    min-height: 60px;
+                    .left-desc-head{
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        .left-desc-name{
+                            font-size:18px;
+                            font-family:PingFang-SC-Bold;
+                            font-weight:bold;
+                            color:rgba(51,51,51,1);
+                        }
+                        .left-desc-time{
+                            font-size:12px;
+                            font-family:PingFang-SC-Medium;
+                            font-weight:500;
+                            color: #999;
+                        }
+                    }
+        
+                    .left-desc-explain{
+                        font-size:14px;
+                        font-family:PingFang-SC-Medium;
+                        font-weight:500;
+                        color:rgba(153,153,153,1);
+                        overflow: hidden;
+                        text-overflow:ellipsis;
+                        white-space: nowrap;
+                    }
+                    .left-desc-tags{
+                        font-size:14px;
+                        font-family:PingFang-SC-Medium;
+                        font-weight:500;
+                        span{
+                            margin-right: 5px;
+                        }
+                    }
+                }
+            }
+            .right{
+                margin-left: 20px;
+                .edit-marker{
+                    margin-left: 10px;
+                }
+            }
+        }
+        &:hover .item-text {
+            top: 0;
+        }
+    }
+}
