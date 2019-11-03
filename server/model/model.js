@@ -21,9 +21,9 @@ mongoose.connect(process.env.MONGO_URL, {
 // 此处防止 node.js - Mongoose: mpromise 错误
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Connect error'));
+db.on('error======', console.error.bind(console, 'Connect error'));
 db.once('open', function () {
-  console.log('Mongodb started successfully');
+  console.log('Mongodb started successfully======');
 });
 
 var defaultSchema = mongoose.Schema({}, { versionKey: false, collection: 'test' });
