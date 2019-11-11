@@ -3,8 +3,15 @@
     <div class="login-container pull-height" @keyup.enter.native="handleLogin">
       <div class="login-info text-white animated fadeInLeft">
         <div class="logo" style="margin-top:-426px">
-          <img
+          <!-- <img
             :src="website(_host_).logo"
+            width="160px"
+            height="160px"
+            alt="logo"
+            style="vertical-align: middle;border-radius: 50%;"
+          > -->
+          <img
+            src="../../images/logo.jpg"
             width="160px"
             height="160px"
             alt="logo"
@@ -14,7 +21,7 @@
         <h2 class="login-info-title">{{website(_host_).info.title}}</h2>
         <ul class="login-info-list">
           <li class="login-info-item" v-for="(item, index) in website(_host_).info.list" :key="index">
-            <i class="el-icon-check"></i>
+            <!-- <i class="el-icon-check"></i> -->
             &nbsp;{{item}}
           </li>
         </ul>
@@ -30,7 +37,7 @@
               <userLogin></userLogin>
             </el-tab-pane>
             <el-tab-pane label="用户注册" name="userRegister">
-              <userLogin></userLogin>
+              <userRegister></userRegister>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -44,12 +51,14 @@
 <script>
 import userLogin from "./userlogin";
 import codeLogin from "./codelogin";
+import userRegister from './userRegister';
 import { mapGetters } from "vuex";
 export default {
   name: "login",
   components: {
     userLogin,
-    codeLogin
+    codeLogin,
+    userRegister
   },
   data() {
     return {
@@ -177,5 +186,9 @@ export default {
 }
 .foot-copyright {
   text-align: center;
+}
+.el-tabs__content{
+  overflow: auto;
+  min-height: 330px;
 }
 </style>

@@ -61,7 +61,7 @@ var ParkSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, name:
 //
 var ShhUserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, username: String, createBy: String, password: String, mobile: String, salt: String, token: String, userId: String, name: String, introduction: String, roles: [String], avatar: String, isAdmin: Number, createdAt: { type: Number, default: nowTime }, updatedAt: Number, state: Number, }, { versionKey: false, collection: 'shh.users' });
 //
-var UserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, mobile: String, name: String, createdAt: { type: Date, default: nowDate }, }, { versionKey: false, collection: 'users' });
+// var UserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, mobile: String, name: String, createdAt: { type: Date, default: nowDate }, }, { versionKey: false, collection: 'users' });
 //
 var UserOauthSchema = mongoose.Schema({ _id: String, userId: String, state: Number }, { versionKey: false, collection: 'user.oauth' });
 var ShhThemeSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, name: String, createBy: String, summary: String, color: String, cover: String, content: String, createdAt: Number, updatedAt: Number, userId: String, state: Number }, { versionKey: false, collection: 'shh.theme' });
@@ -169,7 +169,7 @@ var models = {
   GameNews: mongoose.model('game.media', newSchema),
   Park: mongoose.model('saidao.park', ParkSchema),
   ShhUsers: mongoose.model('shh.users', ShhUserSchema),
-  Users: mongoose.model('users', UserSchema),
+  // Users: mongoose.model('users', UserSchema),
   UserOauth: mongoose.model('user.oauth', UserOauthSchema),
   ShhTheme: mongoose.model('shh.theme', ShhThemeSchema),
   ShhPlayers: mongoose.model('saidao.item.groups', ShhPlayersSchema),

@@ -8,13 +8,13 @@
     label-width="0"
   >
     <div class="loginBox">
-      <el-form-item prop="username">
+      <el-form-item prop="phone">
         <el-input
           size="small"
           @keyup.enter.native="handleLogin"
-          v-model="loginForm.username"
+          v-model="loginForm.phone"
           auto-complete="off"
-          placeholder="请输入用户名"
+          placeholder="请输入手机号"
         >
           <i slot="prefix" class="icon-yonghu"></i>
         </el-input>
@@ -51,13 +51,16 @@ import { api } from "../../axios";
 export default {
   name: "userlogin",
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!isvalidUsername(value)) {
-        callback(new Error("请输入正确的用户名"));
-      } else {
-        callback();
-      }
-    };
+     const validatorPhoneNumber = function (rule, value, callback) {
+        const reg = /^[1][3,4,5,7,8][0-9]{9}$/
+        if(!value){
+            return callback(new Error('请输入手机号'))
+        }else if(reg.test(value)){
+            return callback()
+        }else {
+            return callback(new Error('手机号格式不正确'))
+        }
+    }
     const validateCode = (rule, value, callback) => {
       if (this.code.value !== value) {
         this.loginForm.code = "";
@@ -69,10 +72,9 @@ export default {
     };
     return {
       loginForm: {
-        username: "",
+        phone: "",
         password: ""
       },
-      // loginForm:{},
       checked: false,
       code: {
         src: "",
@@ -81,21 +83,12 @@ export default {
         type: "text"
       },
       loginRules: {
-        username: [
-          { required: true, trigger: "blur", validator: validateUsername }
+        phone: [
+          {required: true,trigger: 'blur', validator: validatorPhoneNumber}
         ],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
-          { min: 6, message: "密码长度最少为6位", trigger: "blur" }
-        ],
-        code: [
-          { required: true, message: "请输入验证码", trigger: "blur" },
-          { min: 4, max: 4, message: "验证码长度为4位", trigger: "blur" },
-          { required: true, trigger: "blur", validator: validateCode }
-        ],
-        mobile: [
-          { min: 11, max: 11, message: "手机号为11位", trigger: "blur" },
-          { required: true, trigger: "blur", message: "请输入手机号" }
+          { min: 6, message: "密码长度最少为6位", trigger: "blur" },
         ]
       },
       passwordType: "password"
@@ -114,6 +107,7 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
+          console.log('======',this.loginForm)
           this.$store.dispatch("Login", this.loginForm).then(res => {
             if (res.data.code == 200) {
               this.$router.replace({ path: "/dashboard/dashboard" });

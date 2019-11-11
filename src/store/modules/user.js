@@ -119,7 +119,7 @@ const user = {
     // 登录
     Login({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
-        var data = { username: userInfo.username, password: userInfo.password }
+        var data = { phone: userInfo.phone, password: userInfo.password }
         api.post('/api/user/login', data).then((res) => {
           if(res.data.code == 200){
             commit('SET_USERID', res.data.user._id);
