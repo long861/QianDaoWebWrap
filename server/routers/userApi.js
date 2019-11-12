@@ -46,7 +46,7 @@ router.post('/login', (req, res, next) => {
     if (!phone) return res.json({ code: 403, message: '账号未填写' });
     if (!password) return res.json({ code: 403, message: '密码未填写' });
     var UserGet = () => {
-        return modelsBox.Users.findOne({ phone, state: 0 }).exec();
+        return modelsBox.Users.findOne({ phone}).exec();
     }
     var asyncFun = async () => {
         try {
@@ -54,8 +54,9 @@ router.post('/login', (req, res, next) => {
             if (!user) return res.json({ code: 403, message: '账号错误,请重新输入' });
             let checkPwd = await utils.checkPwd(password, user.salt, user.password);
             if (!checkPwd) return res.json({ code: 403, message: '密码错误,请重新输入' });
+            if(user.state == 0)  return res.json({ code: 403, message: '账号正在审核，请稍后登录' });
             var token = utils.getUUID();
-            modelsBox.Users.findOneAndUpdate({ _id: user._id, state: 0 }, { $set: { token } }, { new: true }).then((newUser) => {
+            modelsBox.Users.findOneAndUpdate({ _id: user._id, state: 1 }, { $set: { token } }, { new: true }).then((newUser) => {
                 if (!newUser) return res.json({ code: 403, message: '账号不存在' });
                 var User = {
                     _id: newUser._id,
@@ -83,7 +84,7 @@ router.post('/login', (req, res, next) => {
 router.post('/getInfo', (req, res, next) => {
     // const { createBy, creator } = utils.getCreator(req.headers);
     if (req.$user) {
-        modelsBox.Users.findOne({ _id: req.$user._id, state: 0 }).then((user) => {
+        modelsBox.Users.findOne({ _id: req.$user._id, state: 1 }).then((user) => {
             if (!user) return res.json({ code: 500, message: '账号不存在' });
             var newUser = {
                 _id: user._id,

@@ -52,20 +52,21 @@ export const constantRouterMap = [
       }
     ]
   },
-  // 赛事管理
-  // {
-  //   path: '/matchManage',
-  //   component: Layout,
-  //   meta: { title: '赛事管理', icon: 'table' },
-  //   children: [
-  //     {
-  //       path: 'list',
-  //       name: '赛事管理',
-  //       component: () => import('@/pages/matchManage/matchList'),
-  //       meta: { title: '赛事管理', icon: 'table' }
-  //     },
-  //   ]
-  // },
+    // 默认资产管理
+    {
+      path: '/assets',
+      component: Layout,
+      meta: { title: '默认资产管理', icon: 'discounting' },
+      children: [
+        // 线路管理(有添加线路、)
+        {
+          path: 'list',
+          name: '默认资产管理',
+          component: () => import('@/pages/assets/assetsList'),
+          meta: { title: '默认资产管理', icon: 'discounting' }
+        },
+      ]
+    },
   // 线路管理
   {
     path: '/lineManage',
@@ -167,6 +168,38 @@ export const constantRouterMap = [
       }
     ]
   },
+
+  //new
+  {
+    path: '/assets',
+    // name: '创建线路',
+    component: Layout,
+    children: [
+      {
+        path: '/createDefault',
+        name: '创建资产类型',
+        component: () => import('@/pages/assets/createAssetsDefault'),
+        meta: { title: '创建资产类型' }
+      }
+    ],
+    hidden: true
+  },
+  {
+    path: '/assets',
+    // name: '修改动态',
+    component: Layout,
+    children: [
+      {
+        path: '/assetsEdit/:assetsId',
+        name: '修改资产信息',
+        component: () => import('@/pages/assets/createAssetsDefault'),
+        meta: { title: '修改资产信息' }
+      }
+    ],
+    hidden: true
+  },
+
+  //old
   {
     path: '/matchInfo',
     // name: '赛事详情',

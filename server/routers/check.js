@@ -9,8 +9,7 @@ module.exports = function (req, res, next) {
     const { createBy, creator } = utils.getCreator(req.headers);
 
     // modelsBox.Users.findOne({ token, state: 0, createBy }, function (err, user) {
-    modelsBox.Users.findOne({ token, state: 0 }, function (err, user) {
-      console.log('=======token处理',user)
+    modelsBox.Users.findOne({ token, state: 1 }, function (err, user) {
       if (user) req.$user = user;
       next();
     });

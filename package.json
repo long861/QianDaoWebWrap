@@ -17,7 +17,7 @@
     "test": "npm run lint",
     "precommit": "lint-staged",
     "server": "set MONGO_URL=mongodb://localhost:27017/QianDao&&nodemon server",
-    "server1": "set MONGO_URL=mongodb://QiandaoLong:malong.520@47.103.223.146:27017/qiandao&&nodemon server",
+    "server1": "set MONGO_URL=mongodb://QiandaoLong:malong.520@47.103.223.146:27017/qiandao?authSource=admin&&nodemon server",
     "server2": "export MONGO_URL=mongodb://QiandaoLong:malong.520@47.103.223.146:27017/qiandao?authSource=admin&&nodemon server"
   },
   "lint-staged": {

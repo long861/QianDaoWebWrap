@@ -28,7 +28,8 @@ db.once('open', function () {
 function uniqid() {
     return utils.getUUID();
 }
-var UserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, password: String, phone: String, roles: [String],role:String, name: String, pwd: String, salt: String, token: String, userId: String, state: Number, note: { type: String, default: '' }, avatar: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'users' });
+var UserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, password: String, phone: String, roles: [String], role: String, name: String, salt: String, token: String, userId: String, state: Number, note: { type: String, default: '' }, avatar: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'users' });
+var AssetsDefaultSchema = mongoose.Schema({ _id: { type: String, default: uniqid },state:Number, title: String, color: String, type: String, amount: { type: Number, default: 0.00 }, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'assets.type.default' });
 
 // users
 UserSchema.statics = {
@@ -40,8 +41,7 @@ UserSchema.statics = {
         })
     }),
     createUser: ((data, callback) => {
-        console.log('=====data',data)
-        var user = { name: data.name, phone: data.phone, role: data.role, roles: data.roles, password: '', salt: '', token: '', userId: '', state: 0, createdAt: Date.now(), updatedAt: Date.now() }
+        var user = { name: data.name, phone: data.phone, role: data.role, roles: data.roles, password: '', salt: '', token: '', userId: '', state: 1, createdAt: Date.now(), updatedAt: Date.now() }
         user.salt = utils.getUUID();
         user.password = utils.getPwd(data.password, user.salt);
         user.token = utils.getUUID();
@@ -56,7 +56,7 @@ UserSchema.statics = {
 
 var models = {
     Users: mongoose.model('users', UserSchema),
-
+    AssetsDefault: mongoose.model('assets.type.default', AssetsDefaultSchema),
 }
 
 

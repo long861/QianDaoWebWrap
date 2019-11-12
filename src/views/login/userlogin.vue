@@ -109,6 +109,7 @@ export default {
         if (valid) {
           console.log('======',this.loginForm)
           this.$store.dispatch("Login", this.loginForm).then(res => {
+            console.log('===login',res)
             if (res.data.code == 200) {
               this.$router.replace({ path: "/dashboard/dashboard" });
             } else if (res.data.code == 505) {
