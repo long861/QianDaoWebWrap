@@ -217,45 +217,19 @@ export default {
     },
     addAssets() {
       this.$router.push({
-        name: "创建资产类型",
-        path: "/assets/createDefault"
+        name: "创建收支类型",
+        path: "/money/defaultType/createDefault"
       });
     },
-    // createData() {
-    //   this.$refs.createForm.validate(valid => {
-    //     if (valid) {
-    //       this.$confirm("确认提交吗？", "提示", {}).then(() => {
-    //         const data = Object.assign({}, this.createForm);
-    //         data.tags = this.tagsBox;
-    //         if (data.tags.length == 0) {
-    //           return this.$message({
-    //             message: "请选择线路标签",
-    //             type: "warning"
-    //           });
-    //         }
-    //         api.post("api/matchLines/create", data).then(res => {
-    //           if (res.data.code != 200) {
-    //             return this.$message({
-    //               message: "提交成功",
-    //               type: "success"
-    //             });
-    //           }
-    //           this.dialogLine = false;
-    //           this.reload();
-    //         });
-    //       });
+    // markerEdit(item) {
+    //   this.$router.push({
+    //     path: "/markers/lists",
+    //     name: "点标设置",
+    //     params: {
+    //       itemId: `${item._id}`
     //     }
     //   });
     // },
-    markerEdit(item) {
-      this.$router.push({
-        path: "/markers/lists",
-        name: "点标设置",
-        params: {
-          itemId: `${item._id}`
-        }
-      });
-    },
     selectGet(value) {
       var tagsBox = [];
       let obj = {};

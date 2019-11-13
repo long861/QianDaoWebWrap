@@ -52,21 +52,36 @@ export const constantRouterMap = [
       }
     ]
   },
-    // 默认资产管理
-    {
-      path: '/assets',
-      component: Layout,
-      meta: { title: '默认资产管理', icon: 'discounting' },
-      children: [
-        // 线路管理(有添加线路、)
-        {
-          path: 'list',
-          name: '默认资产管理',
-          component: () => import('@/pages/assets/assetsList'),
-          meta: { title: '默认资产管理', icon: 'discounting' }
-        },
-      ]
-    },
+  // 默认资产管理
+  {
+    path: '/assets',
+    component: Layout,
+    meta: { title: '默认资产管理', icon: 'discounting' },
+    children: [
+      // 线路管理(有添加线路、)
+      {
+        path: 'list',
+        name: '默认资产管理',
+        component: () => import('@/pages/assets/assetsList'),
+        meta: { title: '默认资产管理', icon: 'discounting' }
+      },
+    ]
+  },
+  // 默认收支类型
+  {
+    path: '/money',
+    component: Layout,
+    meta: { title: '默认收支类型', icon: 'discounting' },
+    children: [
+      // 线路管理(有添加线路、)
+      {
+        path: 'defaultType/list',
+        name: '默认收支类型',
+        component: () => import('@/pages/money/moneyDefaultTypeList'),
+        meta: { title: '默认收支类型', icon: 'discounting' }
+      },
+    ]
+  },
   // 线路管理
   {
     path: '/lineManage',
@@ -198,6 +213,36 @@ export const constantRouterMap = [
     ],
     hidden: true
   },
+  {
+    path: '/money',
+    component: Layout,
+    children: [
+      {
+        path: '/defaultType/createDefault',
+        name: '创建收支类型',
+        component: () => import('@/pages/money/createMoneyDefaultType'),
+        meta: { title: '创建收支类型' }
+      }
+    ],
+    hidden: true
+  },
+  {
+    path: '/money',
+    component: Layout,
+    children: [
+      {
+        path: '/defaultType/moneyTypeEdit/:moneyTypeId',
+        name: '修改收支信息',
+        component: () => import('@/pages/money/createMoneyDefaultType'),
+        meta: { title: '修改收支信息' }
+      }
+    ],
+    hidden: true
+  },
+  
+
+
+
 
   //old
   {
