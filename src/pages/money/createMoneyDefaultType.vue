@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
     <div class="crumbs">
-      <el-breadcrumb separator="/" v-if="!assetsEdit">
-        <el-breadcrumb-item>创建资产类型</el-breadcrumb-item>
+      <el-breadcrumb separator="/" v-if="!moneyTypeEdit">
+        <el-breadcrumb-item>创建收支类型</el-breadcrumb-item>
       </el-breadcrumb>
       <el-breadcrumb separator="/" v-else>
-        <el-breadcrumb-item>修改资产信息</el-breadcrumb-item>
-        <el-breadcrumb-item>{{assetsTitle}}</el-breadcrumb-item>
+        <el-breadcrumb-item>修改收支信息</el-breadcrumb-item>
+        <el-breadcrumb-item>{{moneyTitle}}</el-breadcrumb-item>
       </el-breadcrumb>
     </div>
     <div class="container">
@@ -35,16 +35,18 @@
               ></i>
             </el-upload>
           </el-form-item>
-          <el-form-item label="资产名称" prop="title">
+          <el-form-item label="收支名称" prop="title">
             <el-input v-model="createForm.title" auto-complete="off"></el-input>
           </el-form-item>
-          <el-form-item label="资产属性" prop="type">
+          <el-form-item label="收支属性" prop="type">
             <el-radio-group v-model="createForm.type">
               <el-radio :label="item.key" v-for="item in options" :key="item.key">{{item.value}}</el-radio>
             </el-radio-group>
           </el-form-item>
-          <el-form-item label="默认颜色" prop="color">
-            <el-color-picker v-model="createForm.color" show-alpha :predefine="predefineColors"></el-color-picker>
+          <el-form-item label="默认展示" prop="status">
+            <el-radio-group v-model="createForm.status">
+              <el-radio :label="item.key" v-for="item in Status" :key="item.key">{{item.value}}</el-radio>
+            </el-radio-group>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" class="addLine" @click="createData">提交</el-button>
@@ -62,53 +64,37 @@ export default {
   data() {
     return {
       rules: {
-        title: [
-          { required: true, message: "资产名称不能为空", trigger: "blur" }
-        ],
         type: [{ required: true, message: "资产属性为必选", trigger: "blur" }],
-        color: [{ required: true, message: "颜色不能为空", trigger: "blur" }]
+        status: [
+          { required: true, message: "资产是否展示为必选", trigger: "blur" }
+        ]
       },
-      createForm: { type: "assets", color: "rgba(255, 69, 0, 0.68)" },
+      createForm: { type: "income", status: 1 },
       filters: {
         name: ""
       },
       options: [
-        { value: "资产", key: "assets" },
-        { value: "负债", key: "liabilities" }
+        { value: "收入", key: "income" },
+        { value: "支出", key: "spending" }
       ],
+      Status: [{ value: "是", key: 1 }, { value: "否", key: 0 }],
       loading: false,
-      assetsEdit: false,
-      assetsTitle: "",
-      predefineColors: [
-        "#ff4500",
-        "#ff8c00",
-        "#ffd700",
-        "#90ee90",
-        "#00ced1",
-        "#1e90ff",
-        "#c71585",
-        "rgba(255, 69, 0, 0.68)",
-        "rgb(255, 120, 0)",
-        "hsv(51, 100, 98)",
-        "hsva(120, 40, 94, 0.5)",
-        "hsl(181, 100%, 37%)",
-        "hsla(209, 100%, 56%, 0.73)",
-        "#c7158577"
-      ]
+      moneyTypeEdit: false,
+      moneyTitle: ""
     };
   },
   mounted() {
-    if (this.$route.params.assetsId) {
-      this.getAssetsInfo();
+    if (this.$route.params.moneyTypeId) {
+      this.getMoneyTypeInfo();
     } else {
       this.isRealy = true;
     }
   },
   methods: {
-    getAssetsInfo() {
+    getMoneyTypeInfo() {
       api
-        .post("/api/assets/assetsInfoById", {
-          _id: this.$route.params.assetsId
+        .post("/api/money/MoneyTypeInfoById", {
+          _id: this.$route.params.moneyTypeId
         })
         .then(res => {
           console.log("===res", res);
@@ -117,10 +103,10 @@ export default {
               location.reload();
             });
           } else if (res.data.code == 200) {
-            this.assetsEdit = true;
-            if (res.data.assets) {
-              this.createForm = res.data.assets;
-              this.assetsTitle = res.data.assets.title;
+            this.moneyTypeEdit = true;
+            if (res.data.moneyTypes) {
+              this.createForm = res.data.moneyTypes;
+              this.moneyTitle = res.data.moneyTypes.title;
             } else {
               return this.$message({
                 message: "当前资产已被删除",
@@ -137,21 +123,30 @@ export default {
     },
     createData() {
       const data = Object.assign({}, this.createForm);
-      api.post("/api/assets/createAssetsDafult", data).then(res => {
+      if (!data.cover) {
+        return this.$message({
+          message: "请上传封面图片",
+          type: "wraning"
+        });
+      }
+      api.post("/api/money/createMoneyTypeDafult", data).then(res => {
         console.log("======res", res);
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
           });
         } else if (res.data.code == 200) {
-          if (!this.assetsEdit) {
+          if (!this.moneyTypeEdit) {
             var message = () =>
               this.$message({
                 message: "添加成功",
                 type: "success"
               });
             var toLineList = () => {
-              this.$router.push({ path: "/assets/list", name: "默认资产管理" });
+              this.$router.push({
+                path: "/money/defaultType/list",
+                name: "默认收支类型"
+              });
             };
             var asyncFun = async () => {
               await message();
@@ -164,7 +159,10 @@ export default {
               type: "success"
             });
             setTimeout(() => {
-              this.$router.push({ path: "/assets/list", name: "默认资产管理" });
+              this.$router.push({
+                path: "/money/defaultType/list",
+                name: "默认收支类型"
+              });
             }, 1000);
           }
         } else {

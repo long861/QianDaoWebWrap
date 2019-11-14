@@ -9,11 +9,11 @@
       >
         <el-form-item>
           <el-input v-model="filters.name">
-            <template slot="prepend">资产名称:</template>
+            <template slot="prepend">收支名称:</template>
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-select v-model="lineTag" placeholder="资产类型">
+          <el-select v-model="lineTag" placeholder="收支属性">
             <el-option v-for="item in options" :key="item.key" :label="item.name" :value="item.key">
               <template slot="prepend"></template>
             </el-option>
@@ -23,13 +23,13 @@
           <el-button type="primary" v-on:click="searchLines">查询</el-button>
         </el-form-item>
         <el-form-item style="float:right">
-          <el-button type="success" v-on:click="addAssets">添加资产类型</el-button>
+          <el-button type="success" v-on:click="addMoneyType">添加资产类型</el-button>
         </el-form-item>
       </el-form>
     </el-col>
     <div class="table_wrap">
-      <div v-if="assets.length > 0">
-        <el-table :data="assets" class="table_info" style="width: 100%;">
+      <div v-if="moneyTypes.length > 0">
+        <el-table :data="moneyTypes" class="table_info" style="width: 100%;">
           <el-table-column type="index" min-width="60"></el-table-column>
           <!-- <el-table-column prop="tags" label="类别" min-width="90" :formatter="tagShow"></el-table-column> -->
           <el-table-column prop="title" label="标题" min-width="120" show-overflow-tooltip></el-table-column>
@@ -44,12 +44,14 @@
               <img alt style="width:0px;height:0px;" v-else />
             </template>
           </el-table-column>
-          <el-table-column prop="amount" label="金额" min-width="120"></el-table-column>
+          <el-table-column prop="type" label="属性" min-width="120" :formatter="typeFormat"></el-table-column>
+          <el-table-column prop="status" label="是否展示" min-width="120" :formatter="statusFormat"></el-table-column>
+
           <!-- <el-table-column prop="createtime" label="时间" min-width="140" :formatter="timeFormat"></el-table-column> -->
           <el-table-column label="操作" min-width="230">
             <template slot-scope="scope">
               <!-- <el-button size="small" type="primary" @click="prevNews(scope.row)">预览</el-button> -->
-              <el-button size="small" @click="assetsEdit(scope.row)">编辑</el-button>
+              <el-button size="small" @click="moneyTypeEdit(scope.row)">编辑</el-button>
               <el-button type="danger" size="small" @click="removeNews(scope.row)">删除</el-button>
             </template>
           </el-table-column>
@@ -73,7 +75,7 @@
   </div>
 </template>
 <script>
-// import { getLinesList, removeLine, editLine, addAssets } from "@/api/lines";
+// import { getLinesList, removeLine, editLine, addMoneyType } from "@/api/lines";
 import axios from "axios";
 import { api } from "../../axios";
 import _ from "underscore";
@@ -121,7 +123,7 @@ export default {
       filters: {
         name: ""
       },
-      assets: [],
+      moneyTypes: [],
       lines: [],
       total: 0,
       page: 1,
@@ -144,11 +146,25 @@ export default {
   },
   inject: ["reload"],
   methods: {
-    assetsEdit(item) {
+    statusFormat(row, column) {
+      if (row.status == 1) {
+        return "是";
+      } else if (row.status == 0) {
+        return "否";
+      }
+    },
+    typeFormat(row, column) {
+      if (row.type == "income") {
+        return "收入";
+      } else if (row.type == "spending") {
+        return "支出";
+      }
+    },
+    moneyTypeEdit(item) {
       this.$router.push({
-        path: "/assets/assetsEdit",
-        name: "修改资产信息",
-        params: { assetsId: item._id }
+        path: "/money/defaultType/moneyTypeEdit",
+        name: "修改收支信息",
+        params: { moneyTypeId: item._id }
       });
     },
     handleEdit(e) {
@@ -215,7 +231,7 @@ export default {
         }
       });
     },
-    addAssets() {
+    addMoneyType() {
       this.$router.push({
         name: "创建收支类型",
         path: "/money/defaultType/createDefault"
@@ -384,18 +400,18 @@ export default {
         }
       });
     },
-    getAssetsDefault() {
-      api.post("/api/assets/getAssetsDefault", {}).then(res => {
+    getMoneyTypesDefault() {
+      api.post("/api/money/getMoneyTypeDefault", {}).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
           });
         } else if (res.data.code == 200) {
           console.log("=====res assets", res);
-          if (res.data.assets.length == 0) {
+          if (res.data.moneyTypes.length == 0) {
             this.message = "暂无数据";
           }
-          this.assets = res.data.assets;
+          this.moneyTypes = res.data.moneyTypes;
         } else {
           return this.$message({
             message: res.data.message,
@@ -406,8 +422,8 @@ export default {
     }
   },
   mounted() {
-    var getAssetsDefault = () => {
-      return this.getAssetsDefault();
+    var getMoneyTypesDefault = () => {
+      return this.getMoneyTypesDefault();
     };
     var getLines = () => {
       return this.getLines();
@@ -418,7 +434,7 @@ export default {
     var asyncFun = async () => {
       await getLines();
       await getTheme();
-      await getAssetsDefault();
+      await getMoneyTypesDefault();
     };
     asyncFun();
   }
