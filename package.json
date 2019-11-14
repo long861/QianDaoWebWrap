@@ -3,7 +3,7 @@
   "version": "3.6.0",
   "license": "MIT",
   "description": "A vue admin template with Element UI & axios & iconfont & permission control & lint",
-  "author": "nxmin <392716797@qq.com>",
+  "author": "malong",
   "scripts": {
     "dev": "cross-env BABEL_ENV=development webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "cross-env npm run dev",
