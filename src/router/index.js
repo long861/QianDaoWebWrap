@@ -241,6 +241,22 @@ export const constantRouterMap = [
   },
   
 
+  //user
+  {
+    path: '/user',
+    // name: '我的账号',
+    component: Layout,
+    children: [
+      {
+        path: '/Info',
+        name: '我的账号',
+        component: () => import('@/pages/user/userInfo'),
+        meta: { title: '我的账号' }
+      }
+    ],
+    hidden: true
+  },
+
 
 
 
@@ -380,20 +396,20 @@ export const constantRouterMap = [
     ],
     hidden: true
   },
-  {
-    path: '/user',
-    // name: '我的账号',
-    component: Layout,
-    children: [
-      {
-        path: '/Info',
-        name: '我的账号',
-        component: () => import('@/pages/user/userInfo'),
-        meta: { title: '我的账号' }
-      }
-    ],
-    hidden: true
-  },
+  // {
+  //   path: '/user',
+  //   // name: '我的账号',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: '/Info',
+  //       name: '我的账号',
+  //       component: () => import('@/pages/user/userInfo'),
+  //       meta: { title: '我的账号' }
+  //     }
+  //   ],
+  //   hidden: true
+  // },
   {
     path: '/park',
     // name: '线路主题',

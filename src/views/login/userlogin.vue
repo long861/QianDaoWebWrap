@@ -48,6 +48,7 @@
 <script>
 import { isvalidUsername } from "@/utils/validate";
 import { api } from "../../axios";
+import md5 from "md5";
 export default {
   name: "userlogin",
   data() {
@@ -107,7 +108,7 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          console.log('======',this.loginForm)
+          console.log('======',this.loginForm);
           this.$store.dispatch("Login", this.loginForm).then(res => {
             console.log('===login',res)
             if (res.data.code == 200) {

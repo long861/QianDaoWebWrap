@@ -151,70 +151,70 @@ export default {
         params: { assetsId: item._id }
       });
     },
-    handleEdit(e) {
-      this.formType = 0;
-      this.dialogStatus = "update";
-      const id = e.currentTarget.id;
-      this.editForm = this.lines.find(n => {
-        return n._id == id;
-      });
-      var editForm = _.extend({}, this.editForm);
-      editForm._start = new Date(editForm._start);
-      editForm._end = new Date(editForm._end);
-      this.editForm = editForm;
-      var options = this.options;
-      var tagsBox = this.editForm.tagsBox;
-      this.tagsBox = this.editForm.tags;
-      var tagsBox2 = [];
-      for (var i = 0; i < tagsBox.length; i++) {
-        for (var j = 0; j < options.length; j++) {
-          if (tagsBox[i] == options[j].themeId) {
-            tagsBox2.push(tagsBox[i]);
-            break;
-          }
-        }
-      }
-      this.tags = tagsBox2;
-      this.dialogLine = true;
-      setTimeout(function() {
-        $("label[for='max']").css("text-align", "center");
-      }, 500);
-    },
-    updateData() {
-      this.$refs.editForm.validate(valid => {
-        if (valid) {
-          const data = Object.assign({}, this.editForm);
-          if (data._count && data._count < 2) {
-            return this.$message({
-              message: "团队赛人数应大于1",
-              type: "warning"
-            });
-          }
-          data.tags = this.tagsBox;
-          console.log("data.tags", data.tags);
-          if (data.tags.length == 0) {
-            return this.$message({
-              message: "请选择线路标签",
-              type: "warning"
-            });
-          }
-          api.post("api/matchLines/edit", data).then(res => {
-            if (res.data.code == 1050) {
-              return this.$store.dispathch("LogOut").then(() => {
-                location.reload();
-              });
-            } else if (res.data.code == 200) {
-              this.reload();
-            } else {
-              return this.$message({
-                message: res.data.message,
-                type: "wraning"
-              });
-            }
-          });
-        }
-      });
-    },
+    // handleEdit(e) {
+    //   this.formType = 0;
+    //   this.dialogStatus = "update";
+    //   const id = e.currentTarget.id;
+    //   this.editForm = this.lines.find(n => {
+    //     return n._id == id;
+    //   });
+    //   var editForm = _.extend({}, this.editForm);
+    //   editForm._start = new Date(editForm._start);
+    //   editForm._end = new Date(editForm._end);
+    //   this.editForm = editForm;
+    //   var options = this.options;
+    //   var tagsBox = this.editForm.tagsBox;
+    //   this.tagsBox = this.editForm.tags;
+    //   var tagsBox2 = [];
+    //   for (var i = 0; i < tagsBox.length; i++) {
+    //     for (var j = 0; j < options.length; j++) {
+    //       if (tagsBox[i] == options[j].themeId) {
+    //         tagsBox2.push(tagsBox[i]);
+    //         break;
+    //       }
+    //     }
+    //   }
+    //   this.tags = tagsBox2;
+    //   this.dialogLine = true;
+    //   setTimeout(function() {
+    //     $("label[for='max']").css("text-align", "center");
+    //   }, 500);
+    // },
+    // updateData() {
+    //   this.$refs.editForm.validate(valid => {
+    //     if (valid) {
+    //       const data = Object.assign({}, this.editForm);
+    //       if (data._count && data._count < 2) {
+    //         return this.$message({
+    //           message: "团队赛人数应大于1",
+    //           type: "warning"
+    //         });
+    //       }
+    //       data.tags = this.tagsBox;
+    //       console.log("data.tags", data.tags);
+    //       if (data.tags.length == 0) {
+    //         return this.$message({
+    //           message: "请选择线路标签",
+    //           type: "warning"
+    //         });
+    //       }
+    //       api.post("api/matchLines/edit", data).then(res => {
+    //         if (res.data.code == 1050) {
+    //           return this.$store.dispathch("LogOut").then(() => {
+    //             location.reload();
+    //           });
+    //         } else if (res.data.code == 200) {
+    //           this.reload();
+    //         } else {
+    //           return this.$message({
+    //             message: res.data.message,
+    //             type: "wraning"
+    //           });
+    //         }
+    //       });
+    //     }
+    //   });
+    // },
     addAssets() {
       this.$router.push({
         name: "创建资产类型",
@@ -247,15 +247,15 @@ export default {
     //     }
     //   });
     // },
-    markerEdit(item) {
-      this.$router.push({
-        path: "/markers/lists",
-        name: "点标设置",
-        params: {
-          itemId: `${item._id}`
-        }
-      });
-    },
+    // markerEdit(item) {
+    //   this.$router.push({
+    //     path: "/markers/lists",
+    //     name: "点标设置",
+    //     params: {
+    //       itemId: `${item._id}`
+    //     }
+    //   });
+    // },
     selectGet(value) {
       var tagsBox = [];
       let obj = {};
@@ -304,35 +304,35 @@ export default {
       this.page = val;
       this.getLines();
     },
-    getLines() {
-      var that = this;
-      var data = {
-        page: this.page,
-        limit: this.limit
-      };
-      this.loading = true;
-      api.post("/api/matchLines/all", data).then(res => {
-        if (res.data.code == 1050) {
-          return this.$store.dispathch("LogOut").then(() => {
-            location.reload();
-          });
-        } else if (res.data.code == 200) {
-          var resData = res.data.data;
-          for (var i = 0; i < resData.length; i++) {
-            resData[i].tagsBox = _.pluck(resData[i].tags, "themeId");
-          }
-          that.lines = resData;
-          this.isRealy = true;
-          this.total = res.data.total;
-          this.loading = false;
-        } else {
-          return this.$message({
-            message: res.data.message,
-            type: "wraning"
-          });
-        }
-      });
-    },
+    // getLines() {
+    //   var that = this;
+    //   var data = {
+    //     page: this.page,
+    //     limit: this.limit
+    //   };
+    //   this.loading = true;
+    //   api.post("/api/matchLines/all", data).then(res => {
+    //     if (res.data.code == 1050) {
+    //       return this.$store.dispathch("LogOut").then(() => {
+    //         location.reload();
+    //       });
+    //     } else if (res.data.code == 200) {
+    //       var resData = res.data.data;
+    //       for (var i = 0; i < resData.length; i++) {
+    //         resData[i].tagsBox = _.pluck(resData[i].tags, "themeId");
+    //       }
+    //       that.lines = resData;
+    //       this.isRealy = true;
+    //       this.total = res.data.total;
+    //       this.loading = false;
+    //     } else {
+    //       return this.$message({
+    //         message: res.data.message,
+    //         type: "wraning"
+    //       });
+    //     }
+    //   });
+    // },
     searchLines() {
       var that = this;
       var data = {
@@ -411,7 +411,7 @@ export default {
       });
     },
     getAssetsDefault() {
-      api.post("/api/assets/getAssetsDefault", {}).then(res => {
+      api.post("/api/qd/assets/getAssetsDefault", {}).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
@@ -435,15 +435,15 @@ export default {
     var getAssetsDefault = () => {
       return this.getAssetsDefault();
     };
-    var getLines = () => {
-      return this.getLines();
-    };
-    var getTheme = () => {
-      return this.getTheme();
-    };
+    // var getLines = () => {
+    //   return this.getLines();
+    // };
+    // var getTheme = () => {
+    //   return this.getTheme();
+    // };
     var asyncFun = async () => {
-      await getLines();
-      await getTheme();
+      // await getLines();
+      // await getTheme();
       await getAssetsDefault();
     };
     asyncFun();

@@ -161,7 +161,8 @@ export default {
       });
     },
     getUserInfo() {
-      api.post("/api/user/getInfo", {}).then(res => {
+      api.post("/api/qd/user/getInfo", {}).then(res => {
+        console.log('------res getInfo',res);
         if (res.data.code == 500) {
           return this.$message({
             message: res.data.message,

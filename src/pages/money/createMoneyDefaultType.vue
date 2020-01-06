@@ -93,7 +93,7 @@ export default {
   methods: {
     getMoneyTypeInfo() {
       api
-        .post("/api/money/MoneyTypeInfoById", {
+        .post("/api/qd/money/MoneyTypeInfoById", {
           _id: this.$route.params.moneyTypeId
         })
         .then(res => {
@@ -129,7 +129,7 @@ export default {
           type: "wraning"
         });
       }
-      api.post("/api/money/createMoneyTypeDafult", data).then(res => {
+      api.post("/api/qd/money/createMoneyTypeDafult", data).then(res => {
         console.log("======res", res);
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {

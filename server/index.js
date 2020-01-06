@@ -41,12 +41,12 @@ app.use('/api/matchLines', lineApi);
 app.use('/api/upload', uploadApi);
 app.use('/api/marker', markerApi);
 app.use('/api/park', parkApi);
-app.use('/api/user', userApi);
+app.use('/api/qd/user', userApi);
 app.use('/api/theme', themeApi);
 
 //new
-app.use('/api/assets',assetsApi);
-app.use('/api/money',moneyApi);
+app.use('/api/qd/assets',assetsApi);
+app.use('/api/qd/money',moneyApi);
 
 var port = (process.env.PORT || 2300);
 var host = (process.env.BIND_IP || 'localhost');

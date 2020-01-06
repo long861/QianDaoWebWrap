@@ -131,7 +131,7 @@ export default {
         type: "warning"
       }).then(() => {
         api
-          .post("/api/money/removeMoneyTypeDefault", { _id: item._id })
+          .post("/api/qd/money/removeMoneyTypeDefault", { _id: item._id })
           .then(res => {
             if (res.data.code == 1050) {
               return this.$store.dispathch("LogOut").then(() => {
@@ -176,7 +176,7 @@ export default {
         type: this.moneyType_type
       };
       this.loading = true;
-      api.post("/api/money/searchMoneyTypes", data).then(res => {
+      api.post("/api/qd/money/searchMoneyTypes", data).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
@@ -202,7 +202,7 @@ export default {
         page: this.page,
         limit: this.limit
       };
-      api.post("/api/money/getMoneyTypeDefault", data).then(res => {
+      api.post("/api/qd/money/getMoneyTypeDefault", data).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();

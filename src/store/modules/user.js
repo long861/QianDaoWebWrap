@@ -120,7 +120,7 @@ const user = {
     Login({ commit }, userInfo) {
       return new Promise((resolve, reject) => {
         var data = { phone: userInfo.phone, password: userInfo.password }
-        api.post('/api/user/login', data).then((res) => {
+        api.post('/api/qd/user/login', data).then((res) => {
           if(res.data.code == 200){
             commit('SET_USERID', res.data.user._id);
             commit('SET_TOKEN', res.data.user.token);
@@ -138,7 +138,7 @@ const user = {
     // 获取用户信息
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        api.post('/api/user/getInfo', {}).then((res) => {
+        api.post('/api/qd/user/getInfo', {}).then((res) => {
           if (res.data.code != 200) {
             return resolve(null)
           }

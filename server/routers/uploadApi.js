@@ -10,10 +10,12 @@ var upload = multer({ dest: "../uploads" });
 router.post('/One', upload.single("file"), function (req, res, next) {
     if (req.method === "POST") {
         var uploadFile = req.file;
+        console.log('==========uploadFile',uploadFile)
         if (uploadFile) {
             // path.extname
             // var extname = path.extname(uploadFile.originalname);
             uploadFuc(uploadFile.path, uploadFile.originalname, function (err, data) {
+                console.log('======ok data',data)
                 if (!err) {
                     var result = { code: 0, data };
                     res.set({
@@ -49,8 +51,13 @@ router.post('/One', upload.single("file"), function (req, res, next) {
 
 function uploadFuc(filepath, filename, callback) {
     var options = { url: "https://cdn.xidong360.com/upload", timeout: 300000 };
+    console.log('========uploadFuc',filepath,'-------',filename)
+    // var options = { url: "https://rtc.ivage.com/upload", timeout: 300000 };
+    
     var r = request.post(options, function (err, res, body) {
+
         if (!err) {
+            console.log('====uploaad body',body);
             try {
                 if (typeof body == "string") body = JSON.parse(body);
                 if (body.code == 0) {
@@ -69,11 +76,8 @@ function uploadFuc(filepath, filename, callback) {
         }
     });
     var form = r.form();
+    console.log('======form',form);
     form.append('name', 'file');
     form.append('file', fs.createReadStream(filepath), { filename: filename });
 }
-
-
-
-
 module.exports = router;

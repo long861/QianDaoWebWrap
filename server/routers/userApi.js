@@ -27,7 +27,8 @@ router.post('/register', (req, res, next) => {
     modelsBox.Users.getUserByPhone(phone, (err, user) => {
         if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
         if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
-        var data = { name: username, phone, password, role,roles }
+        var data = { name: username, phone, password, role,roles };
+        console.log('--------data',data);
         modelsBox.Users.createUser(data, (err, newUser) => {
             if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
             if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
@@ -88,6 +89,7 @@ router.post('/getInfo', (req, res, next) => {
             if (!user) return res.json({ code: 500, message: '账号不存在' });
             var newUser = {
                 _id: user._id,
+                phone:user.phone,
                 name: user.name,
                 token: user.token,
                 userId: user.userId,
