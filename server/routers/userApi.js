@@ -252,6 +252,22 @@ router.post('/createUserByAdmin', (req, res, next) => {
         asyncFun();
     }
 })
+router.post('/removeUser', (req, res, next) => {
+    // const { createBy, creator } = utils.getCreator(req.headers);
+    if (!req.$user) {
+        res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    } else {
+        if(!req.body._id) return res.json({ code: 404, message: '删除失败' });
+        modelsBox.Users.findOne({ _id: req.body._id, state: 1 }).then((user) => {
+            if (!user) return res.json({ code: 505, message: '当前用户不存在' });
+            modelsBox.Users.findOneAndDelete({ _id: req.body._id, state: 1}).then(() => {
+                res.json({ code: 200, message: "删除成功" })
+            })
+        }).catch((err) => {
+            res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+        })
+    }
+})
 // router.post('/updateUser', (req, res, next) => {
 //     const { createBy, creator } = utils.getCreator(req.headers);
 //     if (!req.$user) {

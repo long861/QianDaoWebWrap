@@ -235,7 +235,8 @@ export default {
         type: "warning"
       })
         .then(() => {
-          api.post("api/user/removeUser", item).then(res => {
+          let data = {_id:item._id};
+          api.post("api/qd/user/removeUser", data).then(res => {
             if (res.data.code == 1050) {
               return this.$store.dispathch("LogOut").then(() => {
                 location.reload();
