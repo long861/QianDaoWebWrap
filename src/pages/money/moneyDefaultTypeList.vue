@@ -14,7 +14,12 @@
         </el-form-item>
         <el-form-item>
           <el-select v-model="moneyType_type" placeholder="收支属性">
-            <el-option v-for="item in options" :key="item.key" :label="item.value" :value="item.key">
+            <el-option
+              v-for="item in options"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key"
+            >
               <template slot="prepend"></template>
             </el-option>
           </el-select>
@@ -78,7 +83,7 @@ export default {
   name: "report",
   data() {
     return {
-      moneyType_type: "",
+      moneyType_type: "spending",
       options: [
         { value: "收入", key: "income" },
         { value: "支出", key: "spending" }
@@ -125,6 +130,7 @@ export default {
       });
     },
     removeMoneyType(item) {
+      let that = this;
       this.$confirm("确认删除该收支类型吗?", "提示", {
         confirmButtonText: "确认",
         cancelButtonText: "取消",
@@ -138,16 +144,18 @@ export default {
                 location.reload();
               });
             } else if (res.data.code == 200) {
-              this.$message({
-                message: "删除成功",
-                type: "success"
-              });
-              if (this.moneyTypes.length == 1) {
-                if (this.page != 1) {
-                  this.page = this.page - 1;
+              (async () => {
+                await this.$message({
+                  message: "删除成功",
+                  type: "success"
+                });
+                if (this.moneyTypes.length == 1) {
+                  if (this.page != 1) {
+                    this.page = this.page - 1;
+                  }
                 }
-              }
-              this.getMoneyTypesDefault();
+                await that.getMoneyTypesDefault();
+              })();
             } else {
               return this.$message({
                 message: res.data.message,
@@ -183,7 +191,7 @@ export default {
           });
         } else if (res.data.code == 200) {
           that.moneyTypes = res.data.moneyTypes;
-          if(res.data.moneyTypes.length == 0){
+          if (res.data.moneyTypes.length == 0) {
             this.message = "当前没有数据，快去添加吧！";
           }
           this.isRealy = true;

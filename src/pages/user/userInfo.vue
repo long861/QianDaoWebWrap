@@ -10,7 +10,7 @@
         <el-form :model="userInfo" label-width="120px" ref="userInfo" :rules="rules">
           <el-form-item label="账号" prop="title" label-width="120px">
             <el-input
-              v-model="userInfo.username"
+              v-model="userInfo.phone"
               auto-complete="off"
               placeholder="请输入账号"
               :disabled="true"
@@ -47,7 +47,7 @@
               type="textarea"
               :rows="2"
               placeholder="请输入个人描述"
-              v-model="userInfo.introduction"
+              v-model="userInfo.note"
             ></el-input>
           </el-form-item>
           <el-form-item label="原密码" prop="password" label-width="120px">
@@ -65,7 +65,6 @@
                 :label="item.key"
                 v-for="item in powers"
                 :key="item.key"
-                v-if="power == item.key"
               >{{item.value}}</el-radio>
             </el-radio-group>
           </el-form-item>
@@ -81,6 +80,7 @@
 <script>
 import { mapGetters } from "vuex";
 import { api } from "../../axios";
+import md5 from 'md5';
 export default {
   data() {
     var password0 = (rule, value, callback) => {
@@ -138,9 +138,36 @@ export default {
   },
   methods: {
     updateUser() {
-      const data = Object.assign({}, this.userInfo);
+      let data = Object.assign({}, this.userInfo);
+      let roles = this.power;
+      // console.log('-roles',roles)
+      data.roles = [roles];
+      if(data.password){
+        data.password = md5(data.password);
+      }
+      if((data.password && !data.newPwd)){
+        return this.$message({
+            message: '请输入新密码',
+            type: "wraning"
+          });
+      }
+      if(data.newPwd){
+        data.newPwd = md5(data.newPwd);
+      }
+      if((data.password && !data.newPwd2)){
+        return this.$message({
+            message: '请输入确定密码',
+            type: "wraning"
+          });
+      }
+      if(data.newPwd2){
+        data.newPwd2 = md5(data.newPwd2);
+      }
+      
+      console.log('------data',data)
       // data.newPwd = this.newPwd;
-      api.post("/api/user/updateUserBySelf", data).then(res => {
+      api.post("/api/qd/user/updateUser", data).then(res => {
+        console.log('----------res update',res)
         if (res.data.code == 1050) {
           return this.$store.dispatch("LogOut").then(() => {
             location.reload();
@@ -155,8 +182,8 @@ export default {
             message: res.data.message,
             type: "success"
           });
-          this.userInfo = res.data.users;
-          this.power = res.data.users.roles[0];
+          this.userInfo = res.data.userInfo;
+          this.power = res.data.userInfo.roles[0];
         }
       });
     },

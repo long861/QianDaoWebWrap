@@ -13,6 +13,13 @@
           </el-input>
         </el-form-item>
         <el-form-item>
+          <el-select v-model="user_type" placeholder="按权限查询">
+            <el-option v-for="item in powers" :key="item.key" :label="item.value" :value="item.key">
+              <template slot="prepend"></template>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" v-on:click="search">查询</el-button>
         </el-form-item>
         <el-form-item style="float:right">
@@ -24,7 +31,7 @@
       <div v-if="users.length > 0">
         <el-table :data="users" class="table_info" style="width: 100%;">
           <el-table-column type="index" min-width="60"></el-table-column>
-          <el-table-column prop="username" label="账号" min-width="120" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="phone" label="账号" min-width="120" show-overflow-tooltip></el-table-column>
           <el-table-column prop="name" label="姓名" min-width="120" show-overflow-tooltip></el-table-column>
           <el-table-column prop="avatar" label="头像" min-width="90">
             <template slot-scope="scope">
@@ -33,14 +40,14 @@
                 alt
                 style="width:70px;height:70px;"
                 v-if="scope.row.avatar"
-              >
-              <img alt style="width:0px;height:0px;" v-else>
+              />
+              <img alt style="width:0px;height:0px;" v-else />
             </template>
           </el-table-column>
-          <el-table-column prop="isAdmin" label="角色" min-width="140" :formatter="Admin"></el-table-column>
+          <el-table-column prop="isAdmin" label="权限" min-width="140" :formatter="Admin"></el-table-column>
           <el-table-column label="操作" min-width="230">
             <template slot-scope="scope">
-              <el-button size="small" @click="userEdit(scope.row)">编辑</el-button>
+              <el-button size="small" @click="resetPwd(scope.row)">重置密码</el-button>
               <el-button type="danger" size="small" @click="removeUser(scope.row)">删除</el-button>
             </template>
           </el-table-column>
@@ -64,57 +71,11 @@
     <!--编辑账号-->
     <el-dialog title="编辑账号" :visible.sync="dialogEdit" :close-on-click-modal="false" status-icon>
       <el-form :model="UserData" label-width="120px" ref="UserData" :rules="rules2">
-        <el-form-item label="头像" prop="avatar" label-width="120px">
-          <el-upload
-            class="avatar-uploader"
-            action="/api/upload/One"
-            :show-file-list="false"
-            accept="image/jpeg, image/png"
-            :on-success="uploadImg"
-            :before-upload="beforeAvatarUpload"
-            v-loading="loading2"
-          >
-            <div class="left-img">
-              <img alt :src="avatar" style="width:100%;height: 100%;" v-if="avatar">
-              <img src="/static/img/add.svg" alt style="width:100%" v-else>
-            </div>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="账号" prop="username" label-width="120px">
-          <el-input type="username" v-model="UserData.username" :disabled="true"></el-input>
-        </el-form-item>
-        <el-form-item label="姓名" label-width="120px" prop="name">
-          <el-input v-model="UserData.name" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="原密码" prop="password" label-width="120px">
+        <el-form-item label="新密码" label-width="120px" prop="password">
           <el-input type="password" v-model="UserData.password" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="新密码" label-width="120px" prop="newPwd">
-          <el-input type="password" v-model="UserData.newPwd" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="确定密码" label-width="120px" prop="newPwd2">
-          <el-input type="password" v-model="UserData.newPwd2" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="角色" prop="power" label-width="120px" v-if="roles == 'editor'">
-          <el-radio-group v-model="power">
-            <el-radio
-              disabled
-              :label="item.key"
-              v-for="item in powers"
-              :key="item.key"
-            >{{item.value}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="角色" prop="power" label-width="120px" v-else>
-          <el-radio-group v-model="power">
-            <el-radio :label="item.key" v-for="item in powers" :key="item.key">{{item.value}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="个人描述" label-width="120px" prop="introduction">
-          <el-input type="textarea" :rows="2" placeholder="请输入个人描述" v-model="UserData.introduction"></el-input>
-        </el-form-item>
         <el-form-item style="text-align: left;">
-          <el-button type="primary" class="editLine" @click="updateUser">提交</el-button>
+          <el-button type="primary" class="editLine" @click="resetUserPwd">提交</el-button>
           <el-button @click.native="dialogEdit=false">取消</el-button>
         </el-form-item>
       </el-form>
@@ -123,15 +84,15 @@
     <!--创建账号-->
     <el-dialog title="创建账号" :visible.sync="dialogCreate" :close-on-click-modal="false">
       <el-form :model="createData" label-width="120px" ref="createData" :rules="rules">
-        <el-form-item label="账号/手机号" prop="username" label-width="120px">
-          <el-input type="username" v-model="createData.username" placeholder="请输入手机号"></el-input>
+        <el-form-item label="账号/手机号" prop="phone" label-width="120px">
+          <el-input type="phone" v-model="createData.phone" placeholder="请输入手机号"></el-input>
         </el-form-item>
         <el-form-item label="姓名" prop="name" label-width="120px">
           <el-input type="name" v-model="createData.name"></el-input>
         </el-form-item>
         <el-form-item label="角色" prop="power" label-width="120px">
-          <el-radio-group v-model="power">
-            <el-radio :label="item.key" v-for="item in powers" :key="item.key">{{item.value}}</el-radio>
+          <el-radio-group v-model="roles_type">
+            <el-radio :label="item.key" v-for="item in powersTwo" :key="item.key">{{item.value}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item style="text-align: left;">
@@ -148,19 +109,30 @@ import { mapGetters } from "vuex";
 import _ from "underscore";
 import axios from "axios";
 import { api } from "../../axios";
+import md5 from "md5";
 export default {
   name: "report",
   data() {
-    var checkUser = (rule, value, callback) => {
+    const validatorPhoneNumber = function(rule, value, callback) {
+      const reg = /^[1][3,4,5,7,8][0-9]{9}$/;
       if (!value) {
-        return callback(new Error("账号/手机号不能为空"));
-      }
-      var value1 = Number(value);
-      var testMobile = !/^1[34578]\d{9}$/.test(value);
-      if (testMobile) {
-        return callback(new Error("账号/手机号格式错误,请输入手机号"));
+        return callback(new Error("请输入手机号"));
+      } else if (reg.test(value)) {
+        return callback();
+      } else {
+        return callback(new Error("手机号格式不正确"));
       }
     };
+    // var checkUser = (rule, value, callback) => {
+    //   if (!value) {
+    //     return callback(new Error("账号/手机号不能为空"));
+    //   }
+    //   var value1 = Number(value);
+    //   var testMobile = !/^1[34578]\d{9}$/.test(value);
+    //   if (testMobile) {
+    //     return callback(new Error("账号/手机号格式错误,请输入手机号"));
+    //   }
+    // };
     var password0 = (rule, value, callback) => {
       if (value === "" && (this.UserData.newPwd || this.UserData.newPwd2)) {
         callback(new Error("请输入原密码"));
@@ -186,27 +158,26 @@ export default {
     };
     return {
       rules: {
-        username: [
-          { required: true, message: "账号不能为空", trigger: "blur" },
-          { validator: checkUser, trigger: "blur" }
+        phone: [
+          { required: true, trigger: "blur", validator: validatorPhoneNumber }
         ],
-        power: [{ required: true, message: "角色不能为空", trigger: "blur" }]
+        name: [{ required: true, message: "姓名不能为空", trigger: "blur" }]
       },
       rules2: {
         password: [
           { validator: password0, trigger: "blur" },
           { min: 6, message: "密码长度最少为6位", trigger: "blur" }
-        ],
-        newPwd: [
-          { validator: password1, trigger: "blur" },
-          { min: 6, message: "密码长度最少为6位", trigger: "blur" }
-        ],
-        newPwd2: [
-          { validator: password2, trigger: "blur" },
-          { min: 6, message: "密码长度最少为6位", trigger: "blur" }
-        ],
-        name: [{ required: true, message: "姓名不能为空", trigger: "blur" }],
-        power: [{ required: true, message: "角色不能为空", trigger: "blur" }]
+        ]
+        // newPwd: [
+        //   { validator: password1, trigger: "blur" },
+        //   { min: 6, message: "密码长度最少为6位", trigger: "blur" }
+        // ],
+        // newPwd2: [
+        //   { validator: password2, trigger: "blur" },
+        //   { min: 6, message: "密码长度最少为6位", trigger: "blur" }
+        // ],
+        // name: [{ required: true, message: "姓名不能为空", trigger: "blur" }],
+        // power: [{ required: true, message: "角色不能为空", trigger: "blur" }]
       },
       isRealy: false,
       message: "",
@@ -224,8 +195,14 @@ export default {
       dialogCreate: false,
       UserData: {},
       createData: {},
-      power: "editor",
+      user_type: "all",
       powers: [
+        { key: "all", value: "全部" },
+        { key: "admin", value: "超级管理员" },
+        { key: "editor", value: "普通管理员" }
+      ],
+      roles_type: "editor",
+      powersTwo: [
         { key: "admin", value: "超级管理员" },
         { key: "editor", value: "普通管理员" }
       ]
@@ -247,11 +224,8 @@ export default {
     search() {
       this.getUserList();
     },
-    userEdit(item) {
+    resetPwd(item) {
       this.UserData = _.extend({}, item);
-      this.avatar = item.avatar || "";
-      this.power = item.roles[0];
-      this.newPwd = "";
       this.dialogEdit = true;
     },
     removeUser(item) {
@@ -295,9 +269,22 @@ export default {
         });
     },
     createUser(item) {
-      const data = Object.assign({}, this.createData);
-      data.roles = [this.power];
-      api.post("/api/user/createUser", data).then(res => {
+      let data = Object.assign({}, this.createData);
+      data.roles = [this.roles_type];
+      let { phone, name } = data;
+      if (!phone) {
+        return this.$message({
+          message: "手机号不能为空",
+          type: "wraning"
+        });
+      }
+      if (!name) {
+        return this.$message({
+          message: "姓名不能为空",
+          type: "wraning"
+        });
+      }
+      api.post("/api/qd/user/createUserByAdmin", data).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
@@ -320,11 +307,17 @@ export default {
         }
       });
     },
-    updateUser(item) {
-      const data = Object.assign({}, this.UserData);
-      data.avatar = this.avatar;
-      data.roles = [this.power];
-      api.post("/api/user/updateUser", data).then(res => {
+    resetUserPwd(item) {
+      let UserData = Object.assign({}, this.UserData);
+      let { password, _id } = UserData;
+      if (!password) {
+        return this.$message({
+          message: "密码不能为空",
+          type: "wraning"
+        });
+      }
+      let data = { password: md5(password), _id };
+      api.post("/api/qd/user/resetPwd", data).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();
@@ -348,9 +341,10 @@ export default {
       var data = {
         page: this.page,
         limit: this.limit,
-        name: this.filters.name
+        name: this.filters.name,
+        roles: this.user_type
       };
-      api.post("/api/user/getUserList", data).then(res => {
+      api.post("/api/qd/user/getUserList", data).then(res => {
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
             location.reload();

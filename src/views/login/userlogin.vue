@@ -52,16 +52,16 @@ import md5 from "md5";
 export default {
   name: "userlogin",
   data() {
-     const validatorPhoneNumber = function (rule, value, callback) {
-        const reg = /^[1][3,4,5,7,8][0-9]{9}$/
-        if(!value){
-            return callback(new Error('请输入手机号'))
-        }else if(reg.test(value)){
-            return callback()
-        }else {
-            return callback(new Error('手机号格式不正确'))
-        }
-    }
+    const validatorPhoneNumber = function(rule, value, callback) {
+      const reg = /^[1][3,4,5,7,8][0-9]{9}$/;
+      if (!value) {
+        return callback(new Error("请输入手机号"));
+      } else if (reg.test(value)) {
+        return callback();
+      } else {
+        return callback(new Error("手机号格式不正确"));
+      }
+    };
     const validateCode = (rule, value, callback) => {
       if (this.code.value !== value) {
         this.loginForm.code = "";
@@ -85,11 +85,11 @@ export default {
       },
       loginRules: {
         phone: [
-          {required: true,trigger: 'blur', validator: validatorPhoneNumber}
+          { required: true, trigger: "blur", validator: validatorPhoneNumber }
         ],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
-          { min: 6, message: "密码长度最少为6位", trigger: "blur" },
+          { min: 6, message: "密码长度最少为6位", trigger: "blur" }
         ]
       },
       passwordType: "password"
@@ -108,9 +108,14 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          console.log('======',this.loginForm);
-          this.$store.dispatch("Login", this.loginForm).then(res => {
-            console.log('===login',res)
+          console.log("======", this.loginForm);
+          let { phone, password } = this.loginForm;
+          if (password) {
+            password = md5(password);
+          }
+          let data = { password, phone };
+          this.$store.dispatch("Login", data).then(res => {
+            console.log("===login", res);
             if (res.data.code == 200) {
               this.$router.replace({ path: "/dashboard/dashboard" });
             } else if (res.data.code == 505) {
