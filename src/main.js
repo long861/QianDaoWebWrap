@@ -39,7 +39,7 @@ import VueQrcode from '@xkeshi/vue-qrcode'
 Vue.component('qrcode', VueQrcode);
 var protocol = window.location.protocol;
 var host = window.location.host;
-var shost = host == 'localhost:9528' ? 'https://shh.xidong360.com' : `${protocol}//${host}`;
+var shost = host == 'localhost:9526' ? 'https://shh.xidong360.com' : `${protocol}//${host}`;
 import VueSocketIO from 'vue-socket.io'
 Vue.use(new VueSocketIO({
   debug: true,

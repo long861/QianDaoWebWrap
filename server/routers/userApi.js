@@ -10,6 +10,8 @@ var HTTP = require('http');
 var Config = require('../model/config');
 var utils = require('../utils');
 var md5 = require("md5");
+var async = require('async');
+
 
 router.post('/register', (req, res, next) => {
     console.log('======register', req.body);
@@ -22,22 +24,116 @@ router.post('/register', (req, res, next) => {
     if (!role) return res.json({ code: 403, message: '账号错误,请重新输入' });
     if (role == 1) {
         var roles = ['admin'];
-    } else {
+    } else if (role == 2) {
         var roles = ['editor']
+    } else if (role == 3) {
+        var roles = ['member']
     }
-    modelsBox.Users.getUserByPhone(phone, (err, user) => {
-        if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-        if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
-        var data = { name: username, phone, password, roles };
-        console.log('--------data', data);
-        modelsBox.Users.createUser(data, (err, newUser) => {
+    if (role != 3) {
+        modelsBox.Users.getUserByPhone(phone, (err, user) => {
             if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-            if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-            delete newUser.password;
-            delete newUser.salt;
-            res.json({ code: 200, user: newUser });
+            if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
+            var data = { name: username, phone, password, roles };
+            console.log('--------data', data);
+            modelsBox.Users.createUser(data, (err, newUser) => {
+                if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                delete newUser.password;
+                delete newUser.salt;
+                res.json({ code: 200, user: newUser });
+            })
         })
-    })
+    } else {
+        var getAssetsDefault = () => {
+            return modelsBox.AssetsDefault.find({ state: 1 }).sort({ createdAt: -1 }).exec();
+        }
+        var initAssets = (data, userId) => {
+            console.log('----------initMoney data',data)
+            async.eachSeries(data, function (itemInfo, callback) {
+                console.log('------------------initMoney item', itemInfo)
+                let item = _.extend({},itemInfo);
+                item.userId = userId;
+                item.createdAt = Date.now();
+                item.updatedAt = Date.now();
+                item._id = utils.getUUID();
+                console.log('------------------initMoney item222', item)
+
+                modelsBox.Assets.create(item).then((assets) => {
+                    console.log('------------------initMoney', assets)
+                    callback(null);
+                }).catch((error) => {
+                    console.log('----------error',error)
+                    callback(error);
+                })
+            }, function (err) { 
+                // console.log('---------err',err)
+            });
+        }
+        var getMoneyTypeDefault = () => {
+            return modelsBox.MoneyTypeDefault.find({ status: 1 }).sort({ createdAt: -1 }).exec();
+        }
+        var initMoney = (data, userId) => {
+            async.eachSeries(data, function (itemInfo, callback) {
+                let item = _.extend({},itemInfo);
+                item.userId = userId;
+                item.createdAt = Date.now();
+                item.updatedAt = Date.now();
+                item._id = utils.getUUID();
+                modelsBox.Money.create(item).then((money) => {
+                    console.log('------------------initMoney', money)
+                    callback(null);
+                    // return;
+                }).catch((error) => {
+                    callback(error);
+                    // return error;
+                })
+            }, function (err) { throw err; });
+        }
+        var getUserByPhone = (phone) => {
+            return modelsBox.Users.findOne({ phone }).exec();
+        }
+        var createUser = (data) => {
+            var user = { name: data.name, phone: data.phone, roles: data.roles, password: '', salt: '', token: '', userId: '', state: 1, createdAt: Date.now(), updatedAt: Date.now() }
+            user.salt = utils.getUUID();
+            user.password = utils.getPwd(data.password, user.salt);
+            user.token = utils.getUUID();
+            return modelsBox.Users.create(user).then((newUser) => {
+                return newUser;
+            }).catch((err) => {
+                return err;
+            })
+        }
+        var asyncFun = async () => {
+            try {
+                let getUserByPhoneOver = await getUserByPhone(phone);
+                if (getUserByPhoneOver) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
+                var data = { name: username, phone, password, roles };
+                let createUserOver = await createUser(data);
+                if (!createUserOver) return res.json({ 'code': 500, 'message': '注册失败' });
+                console.log('------createUserOver', createUserOver)
+                let userId = createUserOver._id;
+                console.log('-------userId', userId)
+                let getAssetsDefaultOver = await getAssetsDefault();
+                console.log('---------getAssetsDefaultOver', getAssetsDefaultOver.length);
+                // if (getAssetsDefaultOver.length > 0) {
+                let initAssetsOver = await initAssets(getAssetsDefaultOver, userId);
+                // }
+                let getMoneyTypeDefaultOver = await getMoneyTypeDefault();
+                console.log('---------getMoneyTypeDefaultOver', getMoneyTypeDefaultOver.length);
+
+                // if (getMoneyTypeDefaultOver.length > 0) {
+                let initMoneyOver = await initMoney(getMoneyTypeDefaultOver, userId);
+                // }
+                await delete createUserOver.password;
+                await delete createUserOver.salt;
+                await res.json({ code: 200, user: createUserOver });
+            } catch (err) {
+                console.log('------------err', err);
+                return res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+            }
+        }
+        asyncFun();
+    }
 
 })
 router.post('/login', (req, res, next) => {
@@ -230,8 +326,8 @@ router.post('/createUserByAdmin', (req, res, next) => {
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
-        let { roles,phone,name } = req.body;
-        if (!phone ) return res.json({ code: 404, message: '账号不能为空' });
+        let { roles, phone, name } = req.body;
+        if (!phone) return res.json({ code: 404, message: '账号不能为空' });
         if (!name) return res.json({ code: 404, message: '姓名不能为空' });
         var user = () => {
             return modelsBox.Users.findOne({ phone, state: 1 }).exec();
@@ -240,7 +336,7 @@ router.post('/createUserByAdmin', (req, res, next) => {
             var userInfo = await user();
             if (userInfo) return res.json({ code: 404, message: '当前手机号已注册' });
             let password = md5('111111');
-            var data = { phone, roles, name,password };
+            var data = { phone, roles, name, password };
             modelsBox.Users.createUser(data, (err, newUser) => {
                 if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
                 if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
@@ -257,10 +353,10 @@ router.post('/removeUser', (req, res, next) => {
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
-        if(!req.body._id) return res.json({ code: 404, message: '删除失败' });
+        if (!req.body._id) return res.json({ code: 404, message: '删除失败' });
         modelsBox.Users.findOne({ _id: req.body._id, state: 1 }).then((user) => {
             if (!user) return res.json({ code: 505, message: '当前用户不存在' });
-            modelsBox.Users.findOneAndDelete({ _id: req.body._id, state: 1}).then(() => {
+            modelsBox.Users.findOneAndDelete({ _id: req.body._id, state: 1 }).then(() => {
                 res.json({ code: 200, message: "删除成功" })
             })
         }).catch((err) => {
