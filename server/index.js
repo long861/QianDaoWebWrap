@@ -19,6 +19,9 @@ var themeApi = require('./routers/themeApi');
 var assetsApi = require('./routers/assetsApi');
 var moneyApi = require('./routers/moneyApi');
 
+//member
+var userMemberApi = require('./routers/userMemberApi');
+
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -47,6 +50,11 @@ app.use('/api/theme', themeApi);
 //new
 app.use('/api/qd/assets',assetsApi);
 app.use('/api/qd/money',moneyApi);
+
+//member
+app.use('/api/qd/user/member',userMemberApi);
+
+
 
 var port = (process.env.PORT || 2300);
 var host = (process.env.BIND_IP || 'localhost');

@@ -14,7 +14,6 @@ var async = require('async');
 
 
 router.post('/register', (req, res, next) => {
-    console.log('======register', req.body);
     const { username, password, pwd, role, phone } = req.body;
     if (!username) return res.json({ code: 403, message: '账号不存在,请重新输入' });
     if (!phone) return res.json({ code: 403, message: '手机号不存在，请重新输入' });
@@ -34,7 +33,6 @@ router.post('/register', (req, res, next) => {
             if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
             if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
             var data = { name: username, phone, password, roles };
-            console.log('--------data', data);
             modelsBox.Users.createUser(data, (err, newUser) => {
                 if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
                 if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
@@ -48,44 +46,33 @@ router.post('/register', (req, res, next) => {
             return modelsBox.AssetsDefault.find({ state: 1 }).sort({ createdAt: -1 }).exec();
         }
         var initAssets = (data, userId) => {
-            console.log('----------initMoney data',data)
             async.eachSeries(data, function (itemInfo, callback) {
-                console.log('------------------initMoney item', itemInfo)
-                let item = _.extend({},itemInfo);
+                let item = _.extend({}, itemInfo);
                 item.userId = userId;
                 item.createdAt = Date.now();
                 item.updatedAt = Date.now();
                 item._id = utils.getUUID();
-                console.log('------------------initMoney item222', item)
-
                 modelsBox.Assets.create(item).then((assets) => {
-                    console.log('------------------initMoney', assets)
                     callback(null);
                 }).catch((error) => {
-                    console.log('----------error',error)
                     callback(error);
                 })
-            }, function (err) { 
-                // console.log('---------err',err)
-            });
+            }, function (err) { throw err; });
         }
         var getMoneyTypeDefault = () => {
             return modelsBox.MoneyTypeDefault.find({ status: 1 }).sort({ createdAt: -1 }).exec();
         }
         var initMoney = (data, userId) => {
             async.eachSeries(data, function (itemInfo, callback) {
-                let item = _.extend({},itemInfo);
+                let item = _.extend({}, itemInfo);
                 item.userId = userId;
                 item.createdAt = Date.now();
                 item.updatedAt = Date.now();
                 item._id = utils.getUUID();
                 modelsBox.Money.create(item).then((money) => {
-                    console.log('------------------initMoney', money)
                     callback(null);
-                    // return;
                 }).catch((error) => {
                     callback(error);
-                    // return error;
                 })
             }, function (err) { throw err; });
         }
@@ -110,25 +97,16 @@ router.post('/register', (req, res, next) => {
                 var data = { name: username, phone, password, roles };
                 let createUserOver = await createUser(data);
                 if (!createUserOver) return res.json({ 'code': 500, 'message': '注册失败' });
-                console.log('------createUserOver', createUserOver)
                 let userId = createUserOver._id;
-                console.log('-------userId', userId)
                 let getAssetsDefaultOver = await getAssetsDefault();
-                console.log('---------getAssetsDefaultOver', getAssetsDefaultOver.length);
-                // if (getAssetsDefaultOver.length > 0) {
                 let initAssetsOver = await initAssets(getAssetsDefaultOver, userId);
-                // }
                 let getMoneyTypeDefaultOver = await getMoneyTypeDefault();
-                console.log('---------getMoneyTypeDefaultOver', getMoneyTypeDefaultOver.length);
 
-                // if (getMoneyTypeDefaultOver.length > 0) {
                 let initMoneyOver = await initMoney(getMoneyTypeDefaultOver, userId);
-                // }
                 await delete createUserOver.password;
                 await delete createUserOver.salt;
                 await res.json({ code: 200, user: createUserOver });
             } catch (err) {
-                console.log('------------err', err);
                 return res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
             }
         }
@@ -137,10 +115,7 @@ router.post('/register', (req, res, next) => {
 
 })
 router.post('/login', (req, res, next) => {
-    // const { createBy, creator } = utils.getCreator(req.headers);
-    console.log('=======ceshi', req.body)
     let { phone, password } = req.body;
-    console.log('=======ceshi', req.body)
     if (!phone) return res.json({ code: 403, message: '账号未填写' });
     if (!password) return res.json({ code: 403, message: '密码未填写' });
     var UserGet = () => {
@@ -166,7 +141,6 @@ router.post('/login', (req, res, next) => {
                     avatar: newUser.avatar,
                     state: newUser.state,
                     roles: newUser.roles,
-                    // role: newUser.role,
                     createdAt: newUser.createdAt,
                     updatedAt: Date.now()
                 }
@@ -180,7 +154,6 @@ router.post('/login', (req, res, next) => {
 })
 
 router.post('/getInfo', (req, res, next) => {
-    // const { createBy, creator } = utils.getCreator(req.headers);
     if (req.$user) {
         modelsBox.Users.findOne({ _id: req.$user._id, state: 1 }).then((user) => {
             if (!user) return res.json({ code: 500, message: '账号不存在' });

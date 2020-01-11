@@ -196,7 +196,7 @@ export default {
           pwd = md5(pwd);
           let data = { username, password, pwd, phone, role };
           api
-            .post("/api/qd/user/register", data)
+            .post("/api/member/register", data)
             .then(res => {
               console.log("======res register", res);
               var result = res.data;
