@@ -14,6 +14,7 @@ var async = require('async');
 
 
 router.post('/register', (req, res, next) => {
+    console.log('=====req.body register',req.body)
     const { username, password, pwd, role, phone } = req.body;
     if (!username) return res.json({ code: 403, message: '账号不存在,请重新输入' });
     if (!phone) return res.json({ code: 403, message: '手机号不存在，请重新输入' });
@@ -87,6 +88,7 @@ router.post('/register', (req, res, next) => {
             return modelsBox.Users.create(user).then((newUser) => {
                 return newUser;
             }).catch((err) => {
+                console.log('====create----',err)
                 return err;
             })
         }
@@ -95,7 +97,9 @@ router.post('/register', (req, res, next) => {
                 let getUserByPhoneOver = await getUserByPhone(phone);
                 if (getUserByPhoneOver) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
                 var data = { name: username, phone, password, roles };
+                console.log('=====createUserOver data',data)
                 let createUserOver = await createUser(data);
+                console.log('====createUserOver',createUserOver)
                 if (!createUserOver) return res.json({ 'code': 500, 'message': '注册失败' });
                 let userId = createUserOver._id;
                 let getAssetsDefaultOver = await getAssetsDefault();

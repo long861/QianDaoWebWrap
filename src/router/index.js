@@ -163,6 +163,28 @@ export const constantRouterMap = [
     ]
   },
 
+    //微信公众号
+    {
+      path: '/wechat',
+      component: Layout,
+      meta: { title: '微信公众号', icon: 'star' },
+      children: [
+        {
+          path: 'token',
+          name: 'token',
+          component: () => import('@/pages/wechat/pushNews'),
+          meta: { title: 'token', icon: 'star' }
+        },
+        {
+          path: 'pushNews',
+          name: '推送消息',
+          component: () => import('@/pages/wechat/pushNews'),
+          meta: { title: '推送消息', icon: 'errorLog' }
+        }
+        
+      ]
+    },
+
   // 设置
   {
     path: '/install',
@@ -183,6 +205,7 @@ export const constantRouterMap = [
       }
     ]
   },
+
 
   //new
   {

@@ -16,7 +16,8 @@
     "postbuild": "cp -rf dist-tmp/* dist/",
     "test": "npm run lint",
     "precommit": "lint-staged",
-    "server": "set MONGO_URL=mongodb://localhost:27017/QianDao&&nodemon server",
+    "server": "set MONGO_URL=mongodb://localhost:27017/weChatT&&nodemon server",
+    "server3": "export MONGO_URL=mongodb://localhost:27017/weChatT&&nodemon server",
     "server1": "set MONGO_URL=mongodb://QiandaoLong:malong.520@47.103.223.146:27017/qiandao?authSource=admin&&nodemon server",
     "server2": "export MONGO_URL=mongodb://QiandaoLong:malong.520@47.103.223.146:27017/qiandao?authSource=admin&&nodemon server"
   },
@@ -87,6 +88,7 @@
     "vue-i18n": "^8.0.0",
     "vue-quill-editor": "^3.0.6",
     "vue-router": "3.0.1",
+    "vue-runtime-helpers": "^1.1.2",
     "vue-socket.io": "3.0.7",
     "vue-transition.css": "^1.0.2",
     "vuedraggable": "^2.16.0",

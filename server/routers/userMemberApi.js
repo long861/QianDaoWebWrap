@@ -8,6 +8,7 @@ var async = require('async');
 
 
 router.post('/register', (req, res, next) => {
+    console.log('=====req.body register',req.body)
     const { username, password, pwd, role, phone } = req.body;
     if (!username) return res.json({ code: 403, message: '账号不存在,请重新输入' });
     if (!phone) return res.json({ code: 403, message: '手机号不存在，请重新输入' });
@@ -15,7 +16,11 @@ router.post('/register', (req, res, next) => {
     if (!pwd) return res.json({ code: 403, message: '验证密码不能为空' });
     if (password !== pwd) return res.json({ code: 403, message: '两次密码不相同' });
     if (!role) return res.json({ code: 403, message: '账号错误,请重新输入' });
-    if (role == 3) {
+    if (role == 1) {
+        var roles = ['admin'];
+    } else if (role == 2) {
+        var roles = ['editor']
+    } else if (role == 3) {
         var roles = ['member']
     }
     var getAssetsDefault = () => {
@@ -82,6 +87,7 @@ router.post('/register', (req, res, next) => {
             await delete createUserOver.salt;
             await res.json({ code: 200, user: createUserOver });
         } catch (err) {
+            console.log('====注册失败',err)
             return res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
         }
     }
