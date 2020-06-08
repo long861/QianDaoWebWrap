@@ -39,18 +39,24 @@ import VueQrcode from '@xkeshi/vue-qrcode'
 Vue.component('qrcode', VueQrcode);
 var protocol = window.location.protocol;
 var host = window.location.host;
-var shost = host == 'localhost:9526' ? 'https://shh.xidong360.com' : `${protocol}//${host}`;
-import VueSocketIO from 'vue-socket.io'
-Vue.use(new VueSocketIO({
-  debug: true,
-  connection: shost,
-  // connection: 'http://localhost:2300',
-  vuex: {
-    store,
-    actionPrefix: 'socket_',
-    mutationPrefix: 'SOCKET_'
-  },
-}));
+console.log('====protocol',protocol)
+console.log('====host',host)
+
+console.log('====shost',shost)
+
+// var shost = host == 'localhost:3001' ? 'http://shh.xidong360.com' : `${protocol}//${host}`;
+var shost = host == 'localhost:3001' ? 'http://1831528681.xyz' : `${protocol}//${host}`;
+// import VueSocketIO from 'vue-socket.io'
+// Vue.use(new VueSocketIO({
+//   debug: true,
+//   connection: shost,
+//   // connection: 'http://localhost:3002',
+//   vuex: {
+//     store,
+//     actionPrefix: 'socket_',
+//     mutationPrefix: 'SOCKET_'
+//   },
+// }));
 // register global utility filters.
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
