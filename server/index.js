@@ -60,14 +60,16 @@ app.use('/api/qd/money',moneyApi);
 //member
 app.use('/api/qd/user/member',userMemberApi);
 
+
+//测试天子星BOH接口，暂时使用
+app.use('/api/boh/pos',bohApi);
+
 //wechat
 // app.use('api/wechat',wechatApi);
 app.use('/',wechatApi);
 
 
 
-//测试天子星BOH接口，暂时使用
-app.use('/boh/pos',bohApi);
 
 var port = (process.env.PORT || 3002);
 var host = (process.env.BIND_IP || 'localhost');
