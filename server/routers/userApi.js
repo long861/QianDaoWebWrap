@@ -10,6 +10,7 @@ var HTTP = require('http');
 var Config = require('../model/config');
 var utils = require('../utils');
 
+
 router.post('/register', (req, res, next) => {
     console.log('======register', req.body);
     const { username, password, pwd, role, phone } = req.body;

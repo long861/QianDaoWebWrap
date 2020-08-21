@@ -14,7 +14,7 @@ var userApi = require('./routers/userApi');
 var checkApi = require('./routers/check');
 var qrlogin = require('./routers/qrlogin');
 var themeApi = require('./routers/themeApi');
-
+var bohApi = require('./routers/bohApi');
 //new 
 var assetsApi = require('./routers/assetsApi');
 var moneyApi = require('./routers/moneyApi');
@@ -47,6 +47,10 @@ app.use('/api/theme', themeApi);
 //new
 app.use('/api/assets',assetsApi);
 app.use('/api/money',moneyApi);
+
+
+//测试天子星BOH接口，暂时使用
+app.use('/boh/pos',bohApi);
 
 var port = (process.env.PORT || 2300);
 var host = (process.env.BIND_IP || 'localhost');
