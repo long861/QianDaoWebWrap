@@ -15,8 +15,10 @@ export const loadStyle = url => {
  * 设置浏览器头部标题
  */
 export const setTitle = function(title) {
+  console.log('------window.location',window.location)
   var domainname = website(window.location.host).title;
+  console.log('------domainname',domainname)
   title = title ? `${title}` : domainname
-  window.document.title = title + '-' + domainname;
+  window.document.title =  title + ' - ' + domainname;
 }
 

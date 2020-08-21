@@ -82,66 +82,66 @@ export const constantRouterMap = [
       },
     ]
   },
-  // 线路管理
-  {
-    path: '/lineManage',
-    component: Layout,
-    meta: { title: '线路管理', icon: 'discounting' },
-    children: [
-      // 线路管理(有添加线路、)
-      {
-        path: 'list',
-        name: '线路管理',
-        component: () => import('@/pages/lineManage/lineList'),
-        meta: { title: '线路管理', icon: 'discounting' }
-      },
-    ]
-  },
-  // 点标管理
-  {
-    path: '/markers',
-    component: Layout,
-    meta: { title: '点标管理', icon: 'gpsMap' },
-    children: [
-      {
-        path: 'list',
-        name: '点标管理',
-        component: () => import('@/pages/markers/MarkerListDefault'),
-        meta: { title: '点标管理', icon: 'gpsMap' }
-      },
-    ]
-  },
-  {
-    path: '/park',
-    component: Layout,
-    meta: { title: '内容管理', icon: 'right-mean' },
-    children: [
-      {
-        path: 'themeList',
-        name: '线路主题',
-        component: () => import('@/pages/park/themeList'),
-        meta: { title: '线路主题', icon: 'theme' }
-      },
-      {
-        path: 'knowledge',
-        name: '定向知识',
-        component: () => import('@/pages/park/knowledgeList'),
-        meta: { title: '定向知识', icon: 'right-mean' }
-      },
-      {
-        path: 'news',
-        name: '园区动态',
-        component: () => import('@/pages/park/NewsList'),
-        meta: { title: '园区动态', icon: 'barGraph' }
-      },
-      {
-        path: 'info',
-        name: '园区介绍',
-        component: () => import('@/pages/park/ParkInfo'),
-        meta: { title: '园区介绍', icon: 'tab' }
-      }
-    ]
-  },
+  // // 线路管理
+  // {
+  //   path: '/lineManage',
+  //   component: Layout,
+  //   meta: { title: '线路管理', icon: 'discounting' },
+  //   children: [
+  //     // 线路管理(有添加线路、)
+  //     {
+  //       path: 'list',
+  //       name: '线路管理',
+  //       component: () => import('@/pages/lineManage/lineList'),
+  //       meta: { title: '线路管理', icon: 'discounting' }
+  //     },
+  //   ]
+  // },
+  // // 点标管理
+  // {
+  //   path: '/markers',
+  //   component: Layout,
+  //   meta: { title: '点标管理', icon: 'gpsMap' },
+  //   children: [
+  //     {
+  //       path: 'list',
+  //       name: '点标管理',
+  //       component: () => import('@/pages/markers/MarkerListDefault'),
+  //       meta: { title: '点标管理', icon: 'gpsMap' }
+  //     },
+  //   ]
+  // },
+  // {
+  //   path: '/park',
+  //   component: Layout,
+  //   meta: { title: '内容管理', icon: 'right-mean' },
+  //   children: [
+  //     {
+  //       path: 'themeList',
+  //       name: '线路主题',
+  //       component: () => import('@/pages/park/themeList'),
+  //       meta: { title: '线路主题', icon: 'theme' }
+  //     },
+  //     {
+  //       path: 'knowledge',
+  //       name: '定向知识',
+  //       component: () => import('@/pages/park/knowledgeList'),
+  //       meta: { title: '定向知识', icon: 'right-mean' }
+  //     },
+  //     {
+  //       path: 'news',
+  //       name: '园区动态',
+  //       component: () => import('@/pages/park/NewsList'),
+  //       meta: { title: '园区动态', icon: 'barGraph' }
+  //     },
+  //     {
+  //       path: 'info',
+  //       name: '园区介绍',
+  //       component: () => import('@/pages/park/ParkInfo'),
+  //       meta: { title: '园区介绍', icon: 'tab' }
+  //     }
+  //   ]
+  // },
   //账号管理
   {
     path: '/user',
@@ -163,6 +163,28 @@ export const constantRouterMap = [
     ]
   },
 
+    //微信公众号
+    {
+      path: '/wechat',
+      component: Layout,
+      meta: { title: '微信公众号', icon: 'star' },
+      children: [
+        {
+          path: 'token',
+          name: 'token',
+          component: () => import('@/pages/wechat/pushNews'),
+          meta: { title: 'token', icon: 'star' }
+        },
+        {
+          path: 'pushNews',
+          name: '推送消息',
+          component: () => import('@/pages/wechat/pushNews'),
+          meta: { title: '推送消息', icon: 'errorLog' }
+        }
+        
+      ]
+    },
+
   // 设置
   {
     path: '/install',
@@ -183,6 +205,7 @@ export const constantRouterMap = [
       }
     ]
   },
+
 
   //new
   {
@@ -240,6 +263,22 @@ export const constantRouterMap = [
     hidden: true
   },
   
+
+  //user
+  {
+    path: '/user',
+    // name: '我的账号',
+    component: Layout,
+    children: [
+      {
+        path: '/Info',
+        name: '我的账号',
+        component: () => import('@/pages/user/userInfo'),
+        meta: { title: '我的账号' }
+      }
+    ],
+    hidden: true
+  },
 
 
 
@@ -380,20 +419,20 @@ export const constantRouterMap = [
     ],
     hidden: true
   },
-  {
-    path: '/user',
-    // name: '我的账号',
-    component: Layout,
-    children: [
-      {
-        path: '/Info',
-        name: '我的账号',
-        component: () => import('@/pages/user/userInfo'),
-        meta: { title: '我的账号' }
-      }
-    ],
-    hidden: true
-  },
+  // {
+  //   path: '/user',
+  //   // name: '我的账号',
+  //   component: Layout,
+  //   children: [
+  //     {
+  //       path: '/Info',
+  //       name: '我的账号',
+  //       component: () => import('@/pages/user/userInfo'),
+  //       meta: { title: '我的账号' }
+  //     }
+  //   ],
+  //   hidden: true
+  // },
   {
     path: '/park',
     // name: '线路主题',

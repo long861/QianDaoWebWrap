@@ -3,7 +3,7 @@ var utils = require('../utils');
 var modelsBox = require('../model/modelsBox').models;
 //请求拦截 处理token
 module.exports = function (req, res, next) {
-  if (req.method == 'POST' && req.url != '/api/user/login') {
+  if (req.method == 'POST' && req.url != '/api/qd/user/login') {
     var authorization = req.headers['authorization'];
     var token = authorization ? authorization.split(' ')[1] : '';
     const { createBy, creator } = utils.getCreator(req.headers);

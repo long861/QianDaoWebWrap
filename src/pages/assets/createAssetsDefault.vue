@@ -107,7 +107,7 @@ export default {
   methods: {
     getAssetsInfo() {
       api
-        .post("/api/assets/assetsInfoById", {
+        .post("/api/qd/assets/assetsInfoById", {
           _id: this.$route.params.assetsId
         })
         .then(res => {
@@ -137,7 +137,7 @@ export default {
     },
     createData() {
       const data = Object.assign({}, this.createForm);
-      api.post("/api/assets/createAssetsDafult", data).then(res => {
+      api.post("/api/qd/assets/createAssetsDafult", data).then(res => {
         console.log('======res',res)
         if (res.data.code == 1050) {
           return this.$store.dispathch("LogOut").then(() => {
@@ -176,6 +176,7 @@ export default {
       });
     },
     handleAvatarSuccess(res, file) {
+      console.log('======handleAvatarSuccess,',res,file)
       this.avatarUploading = false;
       if (res.code === 0) {
         Vue.set(this.createForm, "cover", res.data);

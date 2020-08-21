@@ -77,6 +77,7 @@
 <script>
 import { isvalidUsername } from "@/utils/validate";
 import { api } from "../../axios";
+import md5 from "md5";
 export default {
   name: "userRegister",
   data() {
@@ -116,23 +117,23 @@ export default {
         callback();
       }
     };
-    const validatorPhoneNumber = function (rule, value, callback) {
-        const reg = /^[1][3,4,5,7,8][0-9]{9}$/
-        if(!value){
-            return callback(new Error('请输入手机号'))
-        }else if(reg.test(value)){
-            callback()
-        }else {
-            return callback(new Error('手机号格式不正确'))
-        }
-    }
+    const validatorPhoneNumber = function(rule, value, callback) {
+      const reg = /^[1][3,4,5,7,8][0-9]{9}$/;
+      if (!value) {
+        return callback(new Error("请输入手机号"));
+      } else if (reg.test(value)) {
+        callback();
+      } else {
+        return callback(new Error("手机号格式不正确"));
+      }
+    };
     return {
       registerForm: {
         username: "",
         password: "",
         pwd: "",
         role: "1",
-        phone:""
+        phone: ""
       },
       checked: false,
       code: {
@@ -145,8 +146,8 @@ export default {
         username: [
           { required: true, trigger: "blur", validator: validateUsername }
         ],
-         phone: [
-          {required: true,trigger: 'blur', validator: validatorPhoneNumber}
+        phone: [
+          { required: true, trigger: "blur", validator: validatorPhoneNumber }
         ],
         password: [
           { required: true, message: "请输入密码", trigger: "blur" },
@@ -188,30 +189,39 @@ export default {
     },
     handleRegister() {
       this.$refs.registerForm.validate(valid => {
-        console.log('=====vaild',valid,this.registerForm)
+        console.log("=====vaild", valid);
         if (valid) {
-          
-          api.post("/api/user/register", this.registerForm).then(res=>{
-            console.log('======res register',res)
-            var result = res.data;
-            if(result.code !== 200){
+          let { password, pwd, phone, role, username } = this.registerForm;
+          password = md5(password);
+          pwd = md5(pwd);
+          let data = { username, password, pwd, phone, role };
+          // api
+          //   .post("/api/member/register", data)
+          //   .then(res => {
+            api
+            .post("/api/qd/user/register", data)
+            .then(res => {
+              console.log("======res register", res);
+              var result = res.data;
+              if (result.code !== 200) {
+                this.$message({
+                  message: result.message,
+                  type: "wraning"
+                });
+              } else {
+                this.$message({
+                  message: "注册成功，请登录",
+                  type: "success"
+                });
+                this.reload();
+              }
+            })
+            .catch(error => {
               this.$message({
-                message: result.message,
-                type: "wraning"
-              });
-            }else{
-              this.$message({
-                message: '注册成功，请登录',
-                type: "success"
-              });
-              this.reload();
-            }
-          }).catch(error=>{
-            this.$message({
                 message: error,
                 type: "wraning"
               });
-          })
+            });
         }
       });
     }

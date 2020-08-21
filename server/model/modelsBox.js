@@ -30,7 +30,10 @@ function uniqid() {
 }
 var UserSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, password: String, phone: String, roles: [String], role: String, name: String, salt: String, token: String, userId: String, state: Number, note: { type: String, default: '' }, avatar: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'users' });
 var AssetsDefaultSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, state: Number, title: String, color: String, type: String, amount: { type: Number, default: 0.00 }, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'assets.type.default' });
+var AssetsSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, state: Number, title: String, color: String, type: String, amount: { type: Number, default: 0.00 }, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'assets' });
 var MoneyTypeDefaultSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, status: Number, title: { type: String, default: "" }, type: String, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'money.type.default' });
+var MoneySchema = mongoose.Schema({ _id: { type: String, default: uniqid }, status: Number, title: { type: String, default: "" }, type: String, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'money' });
+
 // users
 UserSchema.statics = {
     getUserByPhone: ((phone, callback) => {
@@ -57,7 +60,9 @@ UserSchema.statics = {
 var models = {
     Users: mongoose.model('users', UserSchema),
     AssetsDefault: mongoose.model('assets.type.default', AssetsDefaultSchema),
+    Assets: mongoose.model('assets', AssetsSchema),
     MoneyTypeDefault: mongoose.model('money.type.default', MoneyTypeDefaultSchema),
+    Money: mongoose.model('money', MoneySchema),
 }
 
 

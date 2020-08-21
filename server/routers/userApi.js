@@ -9,10 +9,13 @@ var _ = require('underscore');
 var HTTP = require('http');
 var Config = require('../model/config');
 var utils = require('../utils');
+var md5 = require("md5");
+var async = require('async');
+
 
 
 router.post('/register', (req, res, next) => {
-    console.log('======register', req.body);
+    console.log('=====req.body register',req.body)
     const { username, password, pwd, role, phone } = req.body;
     if (!username) return res.json({ code: 403, message: '账号不存在,请重新输入' });
     if (!phone) return res.json({ code: 403, message: '手机号不存在，请重新输入' });
@@ -20,34 +23,108 @@ router.post('/register', (req, res, next) => {
     if (!pwd) return res.json({ code: 403, message: '验证密码不能为空' });
     if (password !== pwd) return res.json({ code: 403, message: '两次密码不相同' });
     if (!role) return res.json({ code: 403, message: '账号错误,请重新输入' });
-    if(role == 1){
+    if (role == 1) {
         var roles = ['admin'];
-    }else{
+    } else if (role == 2) {
         var roles = ['editor']
+    } else if (role == 3) {
+        var roles = ['member']
     }
-    modelsBox.Users.getUserByPhone(phone, (err, user) => {
-        if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-        if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
-        var data = { name: username, phone, password, role,roles }
-        modelsBox.Users.createUser(data, (err, newUser) => {
+    if (role != 3) {
+        modelsBox.Users.getUserByPhone(phone, (err, user) => {
             if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-            if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
-            delete newUser.password;
-            delete newUser.salt;
-            res.json({ code: 200, user: newUser });
+            if (user) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
+            var data = { name: username, phone, password, roles };
+            modelsBox.Users.createUser(data, (err, newUser) => {
+                if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                delete newUser.password;
+                delete newUser.salt;
+                res.json({ code: 200, user: newUser });
+            })
         })
-    })
+    } else {
+        var getAssetsDefault = () => {
+            return modelsBox.AssetsDefault.find({ state: 1 }).sort({ createdAt: -1 }).exec();
+        }
+        var initAssets = (data, userId) => {
+            async.eachSeries(data, function (itemInfo, callback) {
+                let item = _.extend({}, itemInfo);
+                item.userId = userId;
+                item.createdAt = Date.now();
+                item.updatedAt = Date.now();
+                item._id = utils.getUUID();
+                modelsBox.Assets.create(item).then((assets) => {
+                    callback(null);
+                }).catch((error) => {
+                    callback(error);
+                })
+            }, function (err) { throw err; });
+        }
+        var getMoneyTypeDefault = () => {
+            return modelsBox.MoneyTypeDefault.find({ status: 1 }).sort({ createdAt: -1 }).exec();
+        }
+        var initMoney = (data, userId) => {
+            async.eachSeries(data, function (itemInfo, callback) {
+                let item = _.extend({}, itemInfo);
+                item.userId = userId;
+                item.createdAt = Date.now();
+                item.updatedAt = Date.now();
+                item._id = utils.getUUID();
+                modelsBox.Money.create(item).then((money) => {
+                    callback(null);
+                }).catch((error) => {
+                    callback(error);
+                })
+            }, function (err) { throw err; });
+        }
+        var getUserByPhone = (phone) => {
+            return modelsBox.Users.findOne({ phone }).exec();
+        }
+        var createUser = (data) => {
+            var user = { name: data.name, phone: data.phone, roles: data.roles, password: '', salt: '', token: '', userId: '', state: 1, createdAt: Date.now(), updatedAt: Date.now() }
+            user.salt = utils.getUUID();
+            user.password = utils.getPwd(data.password, user.salt);
+            user.token = utils.getUUID();
+            return modelsBox.Users.create(user).then((newUser) => {
+                return newUser;
+            }).catch((err) => {
+                console.log('====create----',err)
+                return err;
+            })
+        }
+        var asyncFun = async () => {
+            try {
+                let getUserByPhoneOver = await getUserByPhone(phone);
+                if (getUserByPhoneOver) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
+                var data = { name: username, phone, password, roles };
+                console.log('=====createUserOver data',data)
+                let createUserOver = await createUser(data);
+                console.log('====createUserOver',createUserOver)
+                if (!createUserOver) return res.json({ 'code': 500, 'message': '注册失败' });
+                let userId = createUserOver._id;
+                let getAssetsDefaultOver = await getAssetsDefault();
+                let initAssetsOver = await initAssets(getAssetsDefaultOver, userId);
+                let getMoneyTypeDefaultOver = await getMoneyTypeDefault();
+
+                let initMoneyOver = await initMoney(getMoneyTypeDefaultOver, userId);
+                await delete createUserOver.password;
+                await delete createUserOver.salt;
+                await res.json({ code: 200, user: createUserOver });
+            } catch (err) {
+                return res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+            }
+        }
+        asyncFun();
+    }
 
 })
 router.post('/login', (req, res, next) => {
-    // const { createBy, creator } = utils.getCreator(req.headers);
-    console.log('=======ceshi', req.body)
     let { phone, password } = req.body;
-    console.log('=======ceshi', req.body)
     if (!phone) return res.json({ code: 403, message: '账号未填写' });
     if (!password) return res.json({ code: 403, message: '密码未填写' });
     var UserGet = () => {
-        return modelsBox.Users.findOne({ phone}).exec();
+        return modelsBox.Users.findOne({ phone }).exec();
     }
     var asyncFun = async () => {
         try {
@@ -55,7 +132,7 @@ router.post('/login', (req, res, next) => {
             if (!user) return res.json({ code: 403, message: '账号错误,请重新输入' });
             let checkPwd = await utils.checkPwd(password, user.salt, user.password);
             if (!checkPwd) return res.json({ code: 403, message: '密码错误,请重新输入' });
-            if(user.state == 0)  return res.json({ code: 403, message: '账号正在审核，请稍后登录' });
+            if (user.state == 0) return res.json({ code: 403, message: '账号正在审核，请稍后登录' });
             var token = utils.getUUID();
             modelsBox.Users.findOneAndUpdate({ _id: user._id, state: 1 }, { $set: { token } }, { new: true }).then((newUser) => {
                 if (!newUser) return res.json({ code: 403, message: '账号不存在' });
@@ -68,8 +145,7 @@ router.post('/login', (req, res, next) => {
                     note: newUser.note,
                     avatar: newUser.avatar,
                     state: newUser.state,
-                    roles:newUser.roles,
-                    role: newUser.role,
+                    roles: newUser.roles,
                     createdAt: newUser.createdAt,
                     updatedAt: Date.now()
                 }
@@ -83,12 +159,12 @@ router.post('/login', (req, res, next) => {
 })
 
 router.post('/getInfo', (req, res, next) => {
-    // const { createBy, creator } = utils.getCreator(req.headers);
     if (req.$user) {
         modelsBox.Users.findOne({ _id: req.$user._id, state: 1 }).then((user) => {
             if (!user) return res.json({ code: 500, message: '账号不存在' });
             var newUser = {
                 _id: user._id,
+                phone: user.phone,
                 name: user.name,
                 token: user.token,
                 userId: user.userId,
@@ -96,8 +172,7 @@ router.post('/getInfo', (req, res, next) => {
                 note: user.note,
                 avatar: user.avatar,
                 state: user.state,
-                roles:user.roles,
-                role: user.role,
+                roles: user.roles,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt
             }
@@ -110,17 +185,78 @@ router.post('/getInfo', (req, res, next) => {
     }
 })
 
-router.post('/getUserList', (req, res, next) => {
-    const { createBy, creator } = utils.getCreator(req.headers);
+router.post('/updateUser', (req, res, next) => {
+    // const { createBy, creator } = utils.getCreator(req.headers);
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
-        const { name, page, limit } = req.body;
+        let { _id, avatar, password, newPwd, newPwd2, note, name, roles } = req.body;
+        if (!name) return res.json({ code: 404, message: '姓名不能为空' });
+        if (password && !newPwd) return res.json({ code: 404, message: '新密码不存在' });
+        if (password && (password.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+        if (password && newPwd && (newPwd.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+        if (password && newPwd2 && (newPwd2.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+        if (password && newPwd && (password == newPwd)) return res.json({ code: 404, message: '新密码与原密码相同' });
+        if (password && newPwd && !newPwd2) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+        if (password && newPwd && newPwd2 && (newPwd != newPwd2)) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+        var user = () => {
+            return modelsBox.Users.findOne({ _id, state: 1 }).exec();
+        }
+        var asyncFun = async () => {
+            var userInfo = await user();
+            if (!userInfo) return res.json({ code: 505, message: '当前用户不存在' });
+            if (password) {
+                var isPwd = utils.checkPwd(password, userInfo.salt, userInfo.password);
+                if (!isPwd) return res.json({ code: 404, message: "旧密码错误，请重新输入" });
+                var NewPwd = utils.getPwd(newPwd, userInfo.salt);
+            }
+            if (!avatar) avatar = "";
+            var userData = { avatar, note, roles, name };
+            if (NewPwd) {
+                userData.password = NewPwd;
+            }
+            modelsBox.Users.findOneAndUpdate({ _id, state: 1 }, { $set: userData }, { new: true }).then((newUser) => {
+                var user = {
+                    _id: newUser._id,
+                    phone: newUser.phone,
+                    name: newUser.name,
+                    token: newUser.token,
+                    userId: newUser.userId,
+                    name: newUser.name,
+                    note: newUser.note,
+                    avatar: newUser.avatar,
+                    state: newUser.state,
+                    roles: newUser.roles,
+                    createdAt: newUser.createdAt,
+                    updatedAt: newUser.updatedAt
+                }
+                res.json({ code: 200, message: "编辑成功", userInfo: user })
+            }).catch((err) => {
+                res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+            })
+        }
+        asyncFun();
+    }
+})
+
+router.post('/getUserList', (req, res, next) => {
+    if (!req.$user) {
+        res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    } else {
+        const { name, page, limit, roles } = req.body;
+        let where = { state: 1 };
+        if (name) {
+            where.name = new RegExp(name);
+        }
+        if (roles !== "all") {
+            where.roles = roles;
+        }
+        // _id: { $ne: req.$user._id },
         var users = () => {
             if (name) {
-                return models.ShhUsers.find({ _id: { $ne: req.$user._id }, state: 0, name: new RegExp(name), createBy }, { password: 0, salt: 0, token: 0 }).sort({ createdAt: -1 }).exec();
+                return modelsBox.Users.find(where, { password: 0, salt: 0, token: 0 }).sort({ createdAt: -1 }).exec();
             } else {
-                return models.ShhUsers.find({ _id: { $ne: req.$user._id }, state: 0, createBy }, { password: 0, salt: 0, token: 0 }).sort({ createdAt: -1 }).exec();
+                return modelsBox.Users.find(where, { password: 0, salt: 0, token: 0 }).sort({ createdAt: -1 }).exec();
             }
         }
         var asyncFun = async () => {
@@ -140,38 +276,23 @@ router.post('/getUserList', (req, res, next) => {
     }
 })
 
-router.post('/updateUser', (req, res, next) => {
+router.post('/resetPwd', (req, res, next) => {
     const { createBy, creator } = utils.getCreator(req.headers);
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
-        let { _id, avatar, password, newPwd, newPwd2, introduction, name, roles } = req.body;
-        if (!name) return res.json({ code: 404, message: '姓名不能为空' });
-        if (password && !newPwd) return res.json({ code: 404, message: '新密码不存在' });
-        if (password && (password.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd && (newPwd.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd2 && (newPwd2.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd && (password == newPwd)) return res.json({ code: 404, message: '新密码与原密码相同' });
-        if (password && newPwd && !newPwd2) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
-        if (password && newPwd && newPwd2 && (newPwd != newPwd2)) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+        let { _id, password } = req.body;
+        if (!password) return res.json({ code: 404, message: '密码不能为空' });
         var user = () => {
-            return models.ShhUsers.findOne({ _id, state: 0, createBy }).exec();
+            return modelsBox.Users.findOne({ _id, state: 1 }).exec();
         }
         var asyncFun = async () => {
             var userInfo = await user();
             if (!userInfo) return res.json({ code: 505, message: '当前用户不存在' });
-            if (password) {
-                var isPwd = utils.checkPwd(password, userInfo.salt, userInfo.password);
-                if (!isPwd) return res.json({ code: 404, message: "旧密码错误，请重新输入" });
-                var NewPwd = utils.getPwd(newPwd, userInfo.salt);
-            }
-            if (!avatar) avatar = "";
-            var userData = { avatar, introduction, roles, name };
-            if (NewPwd) {
-                userData.password = NewPwd;
-            }
-            models.ShhUsers.findOneAndUpdate({ _id, state: 0, createBy }, { $set: userData }, { new: true }).then((newUser) => {
-                res.json({ code: 200, message: "编辑成功" })
+            var NewPwd = utils.getPwd(password, userInfo.salt);
+            var userData = { password: NewPwd };
+            modelsBox.Users.findOneAndUpdate({ _id, state: 0, createBy }, { $set: userData }, { new: true }).then((newUser) => {
+                res.json({ code: 200, message: "重置成功" })
             }).catch((err) => {
                 res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
             })
@@ -179,15 +300,41 @@ router.post('/updateUser', (req, res, next) => {
         asyncFun();
     }
 })
-
-router.post('/removeUser', (req, res, next) => {
-    const { createBy, creator } = utils.getCreator(req.headers);
+router.post('/createUserByAdmin', (req, res, next) => {
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
-        models.ShhUsers.findOne({ _id: req.body._id, state: 0, createBy }).then((user) => {
+        let { roles, phone, name } = req.body;
+        if (!phone) return res.json({ code: 404, message: '账号不能为空' });
+        if (!name) return res.json({ code: 404, message: '姓名不能为空' });
+        var user = () => {
+            return modelsBox.Users.findOne({ phone, state: 1 }).exec();
+        }
+        var asyncFun = async () => {
+            var userInfo = await user();
+            if (userInfo) return res.json({ code: 404, message: '当前手机号已注册' });
+            let password = md5('111111');
+            var data = { phone, roles, name, password };
+            modelsBox.Users.createUser(data, (err, newUser) => {
+                if (err) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                if (!newUser) return res.json({ 'err': err, 'code': 500, 'message': '系统错误' });
+                delete newUser.password;
+                delete newUser.salt;
+                res.json({ code: 200, user: newUser });
+            })
+        }
+        asyncFun();
+    }
+})
+router.post('/removeUser', (req, res, next) => {
+    // const { createBy, creator } = utils.getCreator(req.headers);
+    if (!req.$user) {
+        res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    } else {
+        if (!req.body._id) return res.json({ code: 404, message: '删除失败' });
+        modelsBox.Users.findOne({ _id: req.body._id, state: 1 }).then((user) => {
             if (!user) return res.json({ code: 505, message: '当前用户不存在' });
-            models.ShhUsers.findOneAndUpdate({ _id: req.body._id, state: 0, createBy }, { $set: { state: 1 } }, { new: true }).then((newUser) => {
+            modelsBox.Users.findOneAndDelete({ _id: req.body._id, state: 1 }).then(() => {
                 res.json({ code: 200, message: "删除成功" })
             })
         }).catch((err) => {
@@ -195,126 +342,181 @@ router.post('/removeUser', (req, res, next) => {
         })
     }
 })
+// router.post('/updateUser', (req, res, next) => {
+//     const { createBy, creator } = utils.getCreator(req.headers);
+//     if (!req.$user) {
+//         res.json({ code: 1050, message: '账号已失效，请重新登录' });
+//     } else {
+//         let { _id, avatar, password, newPwd, newPwd2, introduction, name, roles } = req.body;
+//         if (!name) return res.json({ code: 404, message: '姓名不能为空' });
+//         if (password && !newPwd) return res.json({ code: 404, message: '新密码不存在' });
+//         if (password && (password.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd && (newPwd.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd2 && (newPwd2.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd && (password == newPwd)) return res.json({ code: 404, message: '新密码与原密码相同' });
+//         if (password && newPwd && !newPwd2) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+//         if (password && newPwd && newPwd2 && (newPwd != newPwd2)) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+//         var user = () => {
+//             return models.ShhUsers.findOne({ _id, state: 0, createBy }).exec();
+//         }
+//         var asyncFun = async () => {
+//             var userInfo = await user();
+//             if (!userInfo) return res.json({ code: 505, message: '当前用户不存在' });
+//             if (password) {
+//                 var isPwd = utils.checkPwd(password, userInfo.salt, userInfo.password);
+//                 if (!isPwd) return res.json({ code: 404, message: "旧密码错误，请重新输入" });
+//                 var NewPwd = utils.getPwd(newPwd, userInfo.salt);
+//             }
+//             if (!avatar) avatar = "";
+//             var userData = { avatar, introduction, roles, name };
+//             if (NewPwd) {
+//                 userData.password = NewPwd;
+//             }
+//             models.ShhUsers.findOneAndUpdate({ _id, state: 0, createBy }, { $set: userData }, { new: true }).then((newUser) => {
+//                 res.json({ code: 200, message: "编辑成功" })
+//             }).catch((err) => {
+//                 res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+//             })
+//         }
+//         asyncFun();
+//     }
+// })
 
-router.post('/createUser', (req, res, next) => {
-    const { createBy, creator } = utils.getCreator(req.headers);
-    if (!req.$user) {
-        res.json({ code: 1050, message: '账号已失效，请重新登录' });
-    } else {
-        const { username, roles, name } = req.body;
-        if (_.isEmpty(username)) return res.json({ 'code': 400, message: '账号不能为空' });
-        var isUserName = utils.isPhoneNo(username);
-        if (!isUserName) return res.json({ 'code': 400, message: '账号格式错误' });
-        var user = () => {
-            return models.Users.findOne({ mobile: username }).exec();
-        }
-        var ShhUser = () => {
-            return models.ShhUsers.findOne({ username, createBy }).exec();
-        }
-        var ShhUser2 = (userId) => {
-            return models.ShhUsers.findOne({ userId, createBy }).exec();
-        }
-        var createShhUser = (data) => {
-            var Pwd = utils.getPwd(username, data.salt);
-            data.password = Pwd;
-            return models.ShhUsers.create(data);
-        }
-        var createUser = (username, name) => {
-            return models.Users.create({ mobile: username, name, createdAt: new Date() });
-        }
-        var ShhUserByUserId = (userId) => {
-            return models.ShhUsers.findOne({ userId, createBy }).exec();
-        }
-        var ShhUserUpdate = (userId, data) => {
-            var Pwd = utils.getPwd(username, data.salt);
-            data.password = Pwd;
-            return models.ShhUsers.findOneAndUpdate({ userId, createBy }, { $set: data }, { new: true });
-        }
-        var asyncFun = async () => {
-            var userGet = await user();
-            var userbyCreate;
-            if (!userGet) {
-                userbyCreate = await createUser(username, name);
-            }
-            var userInfo = userGet || userbyCreate;
-            userInfo.name = userInfo.name || "";
-            var ShhUserGet = await ShhUser();
-            if (!ShhUserGet) ShhUserGet = await ShhUser2(userInfo._id);
-            if (ShhUserGet) return res.json({ code: 400, message: '账号/手机号已注册，请重新添加' });
-            var ShhUserByUserIdGet = await ShhUserByUserId(userInfo._id);
-            if (!ShhUserByUserIdGet) {
-                var data = { mobile: username, "username": username, name, createBy, userId: userInfo._id, state: 0, roles, avatar: "", introduction: "" };
-                data.salt = utils.getUUID();
-                data.createdAt = Date.now();
-                data.token = utils.getUUID();
-                var createShhUserOver = await createShhUser(data);
-                if (!createShhUserOver) return res.json({ code: 500, message: '系统错误' });
-                res.json({ code: 200, message: '添加成功' });
-            } else {
-                if (ShhUserByUserIdGet.state == 0) return res.json({ code: 400, message: '该手机号已注册，请重新添加' });
-                var data = { mobile: username, "username": username, name, createBy, userId: userInfo._id, state: 0, roles, avatar: "", introduction: "" };
-                data.salt = utils.getUUID();
-                data.createdAt = Date.now();
-                data.token = utils.getUUID();
-                var ShhUserUpdateOver = await ShhUserUpdate(userInfo._id, data);
-                if (!ShhUserUpdateOver) return res.json({ code: 500, message: '系统错误' });
-                res.json({ code: 200, message: '添加成功' });
-            }
-        }
-        asyncFun();
-    }
-})
+// router.post('/removeUser', (req, res, next) => {
+//     const { createBy, creator } = utils.getCreator(req.headers);
+//     if (!req.$user) {
+//         res.json({ code: 1050, message: '账号已失效，请重新登录' });
+//     } else {
+//         models.ShhUsers.findOne({ _id: req.body._id, state: 0, createBy }).then((user) => {
+//             if (!user) return res.json({ code: 505, message: '当前用户不存在' });
+//             models.ShhUsers.findOneAndUpdate({ _id: req.body._id, state: 0, createBy }, { $set: { state: 1 } }, { new: true }).then((newUser) => {
+//                 res.json({ code: 200, message: "删除成功" })
+//             })
+//         }).catch((err) => {
+//             res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+//         })
+//     }
+// })
 
-router.post('/updateUserBySelf', (req, res, next) => {
-    const { createBy, creator } = utils.getCreator(req.headers);
-    if (!req.$user) {
-        res.json({ code: 1050, message: '账号已失效，请重新登录' });
-    } else {
-        const { _id, username, avatar, introduction, name, password, newPwd, newPwd2 } = req.body;
-        if (!name) return res.json({ code: 404, message: '姓名不能为空' });
-        if (password && !newPwd) return res.json({ code: 404, message: '新密码不存在' });
-        if (password && (password.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd && (newPwd.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd2 && (newPwd2.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
-        if (password && newPwd && (password == newPwd)) return res.json({ code: 404, message: '新密码与原密码相同' });
-        if (password && newPwd && !newPwd2) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
-        if (password && newPwd && newPwd2 && (newPwd != newPwd2)) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
-        var user = () => {
-            return models.ShhUsers.findOne({ _id, state: 0, createBy }).exec();
-        }
-        var userUpdate = (data, _id) => {
-            return models.ShhUsers.findOneAndUpdate({ _id, createBy }, { $set: data }, { new: true });
-        }
-        var asyncFun = async () => {
-            var userGet = await user();
-            if (!userGet) return res.json({ code: 505, message: '该账号已被删除' });
-            if (password) {
-                var isPwd = utils.checkPwd(password, userGet.salt, userGet.password);
-                if (!isPwd) return res.json({ code: 404, message: "旧密码错误，请重新输入" });
-                var NewPwd = utils.getPwd(newPwd, userGet.salt);
-            }
-            var data = { state: 0, avatar, introduction, name, updatedAt: Date.now() };
-            if (NewPwd) {
-                data.password = NewPwd;
-            }
-            var userUpdateGet = await userUpdate(data, _id);
-            if (!userUpdateGet) return res.json({ code: 500, message: '系统错误' });
-            var userInfo = {
-                _id: userUpdateGet._id,
-                name: userUpdateGet.name,
-                token: userUpdateGet.token,
-                userId: userUpdateGet.userId,
-                username: userUpdateGet.username,
-                introduction: userUpdateGet.introduction,
-                avatar: userUpdateGet.avatar,
-                state: userUpdateGet.state,
-                roles: userUpdateGet.roles,
-                createdAt: userUpdateGet.createdAt,
-                updatedAt: userUpdateGet.updatedAt
-            }
-            res.json({ code: 200, users: userInfo, message: '修改成功' });
-        }
-        asyncFun();
-    }
-})
+// router.post('/createUser', (req, res, next) => {
+//     const { createBy, creator } = utils.getCreator(req.headers);
+//     if (!req.$user) {
+//         res.json({ code: 1050, message: '账号已失效，请重新登录' });
+//     } else {
+//         const { username, roles, name } = req.body;
+//         if (_.isEmpty(username)) return res.json({ 'code': 400, message: '账号不能为空' });
+//         var isUserName = utils.isPhoneNo(username);
+//         if (!isUserName) return res.json({ 'code': 400, message: '账号格式错误' });
+//         var user = () => {
+//             return models.Users.findOne({ mobile: username }).exec();
+//         }
+//         var ShhUser = () => {
+//             return models.ShhUsers.findOne({ username, createBy }).exec();
+//         }
+//         var ShhUser2 = (userId) => {
+//             return models.ShhUsers.findOne({ userId, createBy }).exec();
+//         }
+//         var createShhUser = (data) => {
+//             var Pwd = utils.getPwd(username, data.salt);
+//             data.password = Pwd;
+//             return models.ShhUsers.create(data);
+//         }
+//         var createUser = (username, name) => {
+//             return models.Users.create({ mobile: username, name, createdAt: new Date() });
+//         }
+//         var ShhUserByUserId = (userId) => {
+//             return models.ShhUsers.findOne({ userId, createBy }).exec();
+//         }
+//         var ShhUserUpdate = (userId, data) => {
+//             var Pwd = utils.getPwd(username, data.salt);
+//             data.password = Pwd;
+//             return models.ShhUsers.findOneAndUpdate({ userId, createBy }, { $set: data }, { new: true });
+//         }
+//         var asyncFun = async () => {
+//             var userGet = await user();
+//             var userbyCreate;
+//             if (!userGet) {
+//                 userbyCreate = await createUser(username, name);
+//             }
+//             var userInfo = userGet || userbyCreate;
+//             userInfo.name = userInfo.name || "";
+//             var ShhUserGet = await ShhUser();
+//             if (!ShhUserGet) ShhUserGet = await ShhUser2(userInfo._id);
+//             if (ShhUserGet) return res.json({ code: 400, message: '账号/手机号已注册，请重新添加' });
+//             var ShhUserByUserIdGet = await ShhUserByUserId(userInfo._id);
+//             if (!ShhUserByUserIdGet) {
+//                 var data = { mobile: username, "username": username, name, createBy, userId: userInfo._id, state: 0, roles, avatar: "", introduction: "" };
+//                 data.salt = utils.getUUID();
+//                 data.createdAt = Date.now();
+//                 data.token = utils.getUUID();
+//                 var createShhUserOver = await createShhUser(data);
+//                 if (!createShhUserOver) return res.json({ code: 500, message: '系统错误' });
+//                 res.json({ code: 200, message: '添加成功' });
+//             } else {
+//                 if (ShhUserByUserIdGet.state == 0) return res.json({ code: 400, message: '该手机号已注册，请重新添加' });
+//                 var data = { mobile: username, "username": username, name, createBy, userId: userInfo._id, state: 0, roles, avatar: "", introduction: "" };
+//                 data.salt = utils.getUUID();
+//                 data.createdAt = Date.now();
+//                 data.token = utils.getUUID();
+//                 var ShhUserUpdateOver = await ShhUserUpdate(userInfo._id, data);
+//                 if (!ShhUserUpdateOver) return res.json({ code: 500, message: '系统错误' });
+//                 res.json({ code: 200, message: '添加成功' });
+//             }
+//         }
+//         asyncFun();
+//     }
+// })
+
+// router.post('/updateUserBySelf', (req, res, next) => {
+//     const { createBy, creator } = utils.getCreator(req.headers);
+//     if (!req.$user) {
+//         res.json({ code: 1050, message: '账号已失效，请重新登录' });
+//     } else {
+//         const { _id, username, avatar, introduction, name, password, newPwd, newPwd2 } = req.body;
+//         if (!name) return res.json({ code: 404, message: '姓名不能为空' });
+//         if (password && !newPwd) return res.json({ code: 404, message: '新密码不存在' });
+//         if (password && (password.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd && (newPwd.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd2 && (newPwd2.length < 6)) return res.json({ code: 404, message: '密码长度不得小于6个字符' });
+//         if (password && newPwd && (password == newPwd)) return res.json({ code: 404, message: '新密码与原密码相同' });
+//         if (password && newPwd && !newPwd2) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+//         if (password && newPwd && newPwd2 && (newPwd != newPwd2)) return res.json({ code: 404, message: '两次密码不同，请确定后提交' });
+//         var user = () => {
+//             return models.ShhUsers.findOne({ _id, state: 0, createBy }).exec();
+//         }
+//         var userUpdate = (data, _id) => {
+//             return models.ShhUsers.findOneAndUpdate({ _id, createBy }, { $set: data }, { new: true });
+//         }
+//         var asyncFun = async () => {
+//             var userGet = await user();
+//             if (!userGet) return res.json({ code: 505, message: '该账号已被删除' });
+//             if (password) {
+//                 var isPwd = utils.checkPwd(password, userGet.salt, userGet.password);
+//                 if (!isPwd) return res.json({ code: 404, message: "旧密码错误，请重新输入" });
+//                 var NewPwd = utils.getPwd(newPwd, userGet.salt);
+//             }
+//             var data = { state: 0, avatar, introduction, name, updatedAt: Date.now() };
+//             if (NewPwd) {
+//                 data.password = NewPwd;
+//             }
+//             var userUpdateGet = await userUpdate(data, _id);
+//             if (!userUpdateGet) return res.json({ code: 500, message: '系统错误' });
+//             var userInfo = {
+//                 _id: userUpdateGet._id,
+//                 name: userUpdateGet.name,
+//                 token: userUpdateGet.token,
+//                 userId: userUpdateGet.userId,
+//                 username: userUpdateGet.username,
+//                 introduction: userUpdateGet.introduction,
+//                 avatar: userUpdateGet.avatar,
+//                 state: userUpdateGet.state,
+//                 roles: userUpdateGet.roles,
+//                 createdAt: userUpdateGet.createdAt,
+//                 updatedAt: userUpdateGet.updatedAt
+//             }
+//             res.json({ code: 200, users: userInfo, message: '修改成功' });
+//         }
+//         asyncFun();
+//     }
+// })
 module.exports = router;

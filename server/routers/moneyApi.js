@@ -83,7 +83,7 @@ router.post('/searchMoneyTypes', (req, res, next) => {
     const { limit, page, title, type } = req.body;
     var where = {type};
     if(title){
-        where.title = title;
+        where.title = new RegExp(title);
     }
     let allMoneyTypes = () => {
         return modelsBox.MoneyTypeDefault.find(where).exec();

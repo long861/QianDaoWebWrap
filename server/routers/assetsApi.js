@@ -39,11 +39,24 @@ router.post('/createAssetsDafult', (req, res, next)=> {
 })
 router.post('/getAssetsDefault', (req, res, next)=> {
     if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
-    modelsBox.AssetsDefault.find({}).sort({createdAt:-1}).then((assets)=>{
-        return res.json({code:200,message:'success',assets});
-    }).catch((error)=>{
-        return res.json({code:500,message:'系统错误',error})
-    })
+    const { page, limit } = req.body;
+    var allAssetsTypes = () => {
+        return modelsBox.AssetsDefault.find({}).sort({ createdAt: -1 }).exec();
+    }
+    var limitAssetsTypes = () => {
+        return modelsBox.AssetsDefault.find({}).skip((page - 1) * limit).limit(limit).sort({ createdAt: -1 }).exec();
+    }
+    var asyncFun = async () => {
+        try {
+            var assetsBox = await allAssetsTypes();
+            var assets = await limitAssetsTypes();
+            res.json({ code: 200, assets, total: assetsBox.length,message:'success' });
+        } catch (err) {
+            res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+        }
+
+    }
+    asyncFun();
 })
 router.post('/assetsInfoById', (req, res, next)=> {
     if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
@@ -54,6 +67,45 @@ router.post('/assetsInfoById', (req, res, next)=> {
     }).catch((error)=>{
         return res.json({code:500,message:'系统错误',error})
     })
+})
+router.post('/removeAssetsTypeDefault', (req, res, next)=> {
+    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    let {_id} = req.body;
+    if (!_id) return res.json({ code: 403, message: '入参错误' });
+    modelsBox.AssetsDefault.findOne({_id}).then((assets)=>{
+        // return res.json({code:200,message:'success',assets});
+        if (!assets) return res.json({ code: 403, message: '该资产类型已被删除' });
+        modelsBox.AssetsDefault.findOneAndDelete({ _id }).then(() => {
+            return res.json({ code: 200, message: '删除完成' });
+        })
+    }).catch((error)=>{
+        return res.json({code:500,message:'系统错误',error})
+    })
+})
+router.post('/searchAssetsTypesDefault', (req, res, next)=> {
+    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    const { limit, page, title, type } = req.body;
+    var where = {type};
+    if(title){
+        where.title = new RegExp(title);
+    }
+    let allAssetsTypes = () => {
+        return modelsBox.AssetsDefault.find(where).exec();
+    }
+    let limitAssetsTypes = () => {
+        return modelsBox.AssetsDefault.find(where).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
+    }
+    var asyncFun = async () => {
+        try {
+            var assetsBox = await allAssetsTypes();
+            var assets = await limitAssetsTypes();
+            res.json({ code: 200, assets, total: assetsBox.length ,message:'success'});
+        } catch (err) {
+            res.json({ 'code': 500, 'err': err, 'message': '系统错误' });
+
+        }
+    }
+    asyncFun();
 })
 
 

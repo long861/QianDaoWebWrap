@@ -16,6 +16,7 @@ function hasPermission(roles, permissionRoles) {
 }
 const whiteList = ['/login'] // 不重定向白名单
 router.beforeEach((to, from, next) => {
+  console.log('==============to',to)
   NProgress.start()
   if (getToken()) {
     // 设置浏览器头部标题
@@ -81,6 +82,7 @@ router.afterEach(() => {
   NProgress.done() // 结束Progress
   setTimeout(() => {
     const browserHeaderTitle = store.getters.browserHeaderTitle
+    console.log('-----------browserHeaderTitle',browserHeaderTitle)
     setTitle(browserHeaderTitle)
   }, 0)
 })
