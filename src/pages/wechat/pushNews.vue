@@ -2,7 +2,10 @@
   <div class="pushNewsBox">
     <el-row>
       <el-button @click="getToken()">获取token</el-button>
-      <el-button type="primary">主要按钮</el-button>
+      <el-button type="primary" @click="bohAddOrder()">下单</el-button>
+      <el-button type="primary" @click="bohOverOrder()">结账</el-button>
+      <el-button type="primary" @click="bohChangeTable()">转台</el-button>
+
       <el-button type="success">成功按钮</el-button>
       <el-button type="info">信息按钮</el-button>
       <el-button type="warning">警告按钮</el-button>
@@ -43,40 +46,63 @@ import { api } from "../../axios";
 export default {
   name: "report",
   methods: {
-      tableRowClassName({row, rowIndex}) {
-        if (rowIndex === 1) {
-          return 'warning-row';
-        } else if (rowIndex === 3) {
-          return 'success-row';
-        }
-        return '';
-      },
-      getToken(){
-            api.post("/api/wechat/getToken", {}).then(res => {
-                console.log('=====api/wechat res',res)
-            })
+    tableRowClassName({ row, rowIndex }) {
+      if (rowIndex === 1) {
+        return "warning-row";
+      } else if (rowIndex === 3) {
+        return "success-row";
       }
+      return "";
+    },
+    getToken() {
+      api.post("/api/wechat/getToken", {}).then((res) => {
+        console.log("=====api/wechat res", res);
+      });
+    },
+    bohAddOrder() {
+      let data = {type:'0',bill_num:"123456"};
+      api.post("/api/boh/pos/notice", data).then((res) => {
+        console.log("=====bohAddOrder res", res);
+      });
+    },
+    bohOverOrder() {
+      let data = {type:'0',bill_num:"123456"};
+      api.post("/api/boh/pos/notice", data).then((res) => {
+        console.log("=====bohOverOrder res", res);
+      });
+    },
+    bohChangeTable() {
+      let data = {type:'0',bill_num:"123456",stable_code:'1',rtable_code:'2'};
+      api.post("/api/boh/pos/notice", data).then((res) => {
+        console.log("=====bohChangeTable res", res);
+      });
+    },
   },
   data() {
     return {
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄',
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄',
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }]
+      tableData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+      ],
     };
-  }
+  },
 };
 </script>
