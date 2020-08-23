@@ -24,9 +24,7 @@
 import axios from "axios";
 import { api } from "../../axios";
 import _ from "underscore";
-import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
-import "quill/dist/quill.bubble.css";
 export default {
   data() {
     return {

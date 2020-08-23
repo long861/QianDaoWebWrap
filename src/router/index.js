@@ -111,37 +111,37 @@ export const constantRouterMap = [
   //     },
   //   ]
   // },
-  // {
-  //   path: '/park',
-  //   component: Layout,
-  //   meta: { title: '内容管理', icon: 'right-mean' },
-  //   children: [
-  //     {
-  //       path: 'themeList',
-  //       name: '线路主题',
-  //       component: () => import('@/pages/park/themeList'),
-  //       meta: { title: '线路主题', icon: 'theme' }
-  //     },
-  //     {
-  //       path: 'knowledge',
-  //       name: '定向知识',
-  //       component: () => import('@/pages/park/knowledgeList'),
-  //       meta: { title: '定向知识', icon: 'right-mean' }
-  //     },
-  //     {
-  //       path: 'news',
-  //       name: '园区动态',
-  //       component: () => import('@/pages/park/NewsList'),
-  //       meta: { title: '园区动态', icon: 'barGraph' }
-  //     },
-  //     {
-  //       path: 'info',
-  //       name: '园区介绍',
-  //       component: () => import('@/pages/park/ParkInfo'),
-  //       meta: { title: '园区介绍', icon: 'tab' }
-  //     }
-  //   ]
-  // },
+  {
+    path: '/park',
+    component: Layout,
+    meta: { title: '内容管理', icon: 'right-mean' },
+    children: [
+      {
+        path: 'themeList',
+        name: '线路主题',
+        component: () => import('@/pages/park/themeList'),
+        meta: { title: '线路主题', icon: 'theme' }
+      },
+      {
+        path: 'knowledge',
+        name: '定向知识',
+        component: () => import('@/pages/park/knowledgeList'),
+        meta: { title: '定向知识', icon: 'right-mean' }
+      },
+      {
+        path: 'news',
+        name: '园区动态',
+        component: () => import('@/pages/park/NewsList'),
+        meta: { title: '园区动态', icon: 'barGraph' }
+      },
+      {
+        path: 'info',
+        name: '园区介绍',
+        component: () => import('@/pages/park/ParkInfo'),
+        meta: { title: '园区介绍', icon: 'tab' }
+      }
+    ]
+  },
   //账号管理
   {
     path: '/user',

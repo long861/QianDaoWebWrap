@@ -72,7 +72,8 @@ app.use('/',wechatApi);
 
 
 var port = (process.env.PORT || 3002);
-var host = (process.env.BIND_IP || 'localhost');
+// var host = (process.env.BIND_IP || 'localhost');
+var host = "0.0.0.0";
 server.listen(port, host, function () {
   console.log(`Express server listening on http://${host}:${port}`);
 });

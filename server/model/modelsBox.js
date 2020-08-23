@@ -33,6 +33,7 @@ var AssetsDefaultSchema = mongoose.Schema({ _id: { type: String, default: uniqid
 var AssetsSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, state: Number, title: String, color: String, type: String, amount: { type: Number, default: 0.00 }, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'assets' });
 var MoneyTypeDefaultSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, status: Number, title: { type: String, default: "" }, type: String, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'money.type.default' });
 var MoneySchema = mongoose.Schema({ _id: { type: String, default: uniqid }, status: Number, title: { type: String, default: "" }, type: String, userId: String, cover: { type: String, default: null }, createdAt: { type: Date, default: Date.now() }, updatedAt: { type: Date, default: Date.now() } }, { versionKey: false, collection: 'money' });
+var newSchema = mongoose.Schema({ _id: { type: String, default: uniqid }, type: String, cover: String, tags: Array, author: String, content: String, domainId: String, ecId: String, info: Array, summary: String, cover: String, createtime: Number, title: String, uuid: String, gameId: String, from: Number, link: String, updatedAt: Date, timestamp: Number, state: Number, subtitle: String }, { versionKey: false, collection: 'news.test' });
 
 // users
 UserSchema.statics = {
@@ -63,6 +64,7 @@ var models = {
     Assets: mongoose.model('assets', AssetsSchema),
     MoneyTypeDefault: mongoose.model('money.type.default', MoneyTypeDefaultSchema),
     Money: mongoose.model('money', MoneySchema),
+    GameNews: mongoose.model('news.test', newSchema),
 }
 
 

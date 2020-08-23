@@ -42,7 +42,7 @@ var host = window.location.host;
 console.log('====protocol',protocol)
 console.log('====host',host)
 
-console.log('====shost',shost)
+// console.log('====shost',shost)
 
 // var shost = host == 'localhost:3001' ? 'http://shh.xidong360.com' : `${protocol}//${host}`;
 var shost = host == 'localhost:3001' ? 'http://1831528681.xyz' : `${protocol}//${host}`;
