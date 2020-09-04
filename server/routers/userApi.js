@@ -15,7 +15,6 @@ var async = require('async');
 
 
 router.post('/register', (req, res, next) => {
-    console.log('=====req.body register',req.body)
     const { username, password, pwd, role, phone } = req.body;
     if (!username) return res.json({ code: 403, message: '账号不存在,请重新输入' });
     if (!phone) return res.json({ code: 403, message: '手机号不存在，请重新输入' });
@@ -89,7 +88,6 @@ router.post('/register', (req, res, next) => {
             return modelsBox.Users.create(user).then((newUser) => {
                 return newUser;
             }).catch((err) => {
-                console.log('====create----',err)
                 return err;
             })
         }
@@ -98,9 +96,7 @@ router.post('/register', (req, res, next) => {
                 let getUserByPhoneOver = await getUserByPhone(phone);
                 if (getUserByPhoneOver) return res.json({ 'code': 501, 'message': '当前手机号已注册' });
                 var data = { name: username, phone, password, roles };
-                console.log('=====createUserOver data',data)
                 let createUserOver = await createUser(data);
-                console.log('====createUserOver',createUserOver)
                 if (!createUserOver) return res.json({ 'code': 500, 'message': '注册失败' });
                 let userId = createUserOver._id;
                 let getAssetsDefaultOver = await getAssetsDefault();
@@ -277,7 +273,7 @@ router.post('/getUserList', (req, res, next) => {
 })
 
 router.post('/resetPwd', (req, res, next) => {
-    const { createBy, creator } = utils.getCreator(req.headers);
+    // const { createBy, creator } = utils.getCreator(req.headers);
     if (!req.$user) {
         res.json({ code: 1050, message: '账号已失效，请重新登录' });
     } else {
@@ -291,7 +287,7 @@ router.post('/resetPwd', (req, res, next) => {
             if (!userInfo) return res.json({ code: 505, message: '当前用户不存在' });
             var NewPwd = utils.getPwd(password, userInfo.salt);
             var userData = { password: NewPwd };
-            modelsBox.Users.findOneAndUpdate({ _id, state: 0, createBy }, { $set: userData }, { new: true }).then((newUser) => {
+            modelsBox.Users.findOneAndUpdate({ _id, state: 1 }, { $set: userData }, { new: true }).then((newUser) => {
                 res.json({ code: 200, message: "重置成功" })
             }).catch((err) => {
                 res.json({ 'code': 500, 'err': err, 'message': '系统错误' });

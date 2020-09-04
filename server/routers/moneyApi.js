@@ -35,7 +35,7 @@ router.post('/createMoneyTypeDafult', (req, res, next) => {
 
 })
 router.post('/getMoneyTypeDefault', (req, res, next) => {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     const { page, limit } = req.body;
     var allMoneyTypes = () => {
         return modelsBox.MoneyTypeDefault.find({}).sort({ createdAt: -1 }).exec();
@@ -56,7 +56,7 @@ router.post('/getMoneyTypeDefault', (req, res, next) => {
     asyncFun();
 })
 router.post('/MoneyTypeInfoById', (req, res, next) => {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     let { _id } = req.body;
     if (!_id) return res.json({ code: 403, message: '入参错误' });
     modelsBox.MoneyTypeDefault.findOne({ _id }).then((moneyTypes) => {
@@ -66,7 +66,7 @@ router.post('/MoneyTypeInfoById', (req, res, next) => {
     })
 })
 router.post('/removeMoneyTypeDefault', (req, res, next) => {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     let { _id } = req.body;
     if (!_id) return res.json({ code: 403, message: '入参错误' });
     modelsBox.MoneyTypeDefault.findOne({ _id }).then((moneyTypes) => {
@@ -79,7 +79,7 @@ router.post('/removeMoneyTypeDefault', (req, res, next) => {
     })
 })
 router.post('/searchMoneyTypes', (req, res, next) => {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     const { limit, page, title, type } = req.body;
     var where = {type};
     if(title){

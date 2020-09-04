@@ -33,6 +33,8 @@ function getPwd(password, salt) {
  * @param {*} password2 数据库password字段
  */
 function checkPwd(password, salt, password2) {
+  console.log('++++',getPwd(password, salt))
+  console.log('=========password2',password2)
   return getPwd(password, salt) == password2;
 }
 function textToColor(str) {

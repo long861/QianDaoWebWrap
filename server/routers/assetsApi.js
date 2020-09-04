@@ -38,7 +38,7 @@ router.post('/createAssetsDafult', (req, res, next)=> {
     
 })
 router.post('/getAssetsDefault', (req, res, next)=> {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     const { page, limit } = req.body;
     var allAssetsTypes = () => {
         return modelsBox.AssetsDefault.find({}).sort({ createdAt: -1 }).exec();
@@ -59,7 +59,7 @@ router.post('/getAssetsDefault', (req, res, next)=> {
     asyncFun();
 })
 router.post('/assetsInfoById', (req, res, next)=> {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     let {_id} = req.body;
     if (!_id) return res.json({ code: 403, message: '入参错误' });
     modelsBox.AssetsDefault.findOne({_id}).then((assets)=>{
@@ -69,7 +69,7 @@ router.post('/assetsInfoById', (req, res, next)=> {
     })
 })
 router.post('/removeAssetsTypeDefault', (req, res, next)=> {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
     let {_id} = req.body;
     if (!_id) return res.json({ code: 403, message: '入参错误' });
     modelsBox.AssetsDefault.findOne({_id}).then((assets)=>{
@@ -83,8 +83,14 @@ router.post('/removeAssetsTypeDefault', (req, res, next)=> {
     })
 })
 router.post('/searchAssetsTypesDefault', (req, res, next)=> {
-    if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
-    const { limit, page, title, type } = req.body;
+    // if (!req.$user) return res.json({ code: 1050, message: '账号已失效，请重新登录' });
+    let { limit, page, title, type } = req.body;
+    if(!page){
+        page = 1;
+    }
+    if(!limit){
+        limit=10;
+    }
     var where = {type};
     if(title){
         where.title = new RegExp(title);
